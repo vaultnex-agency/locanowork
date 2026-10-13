@@ -9,7 +9,7 @@ interface StudentCard {
   tint: string
   accent: string
   icon: React.ReactNode
-  isTransport?: boolean
+  href?: string
 }
 
 const CARDS: StudentCard[] = [
@@ -19,6 +19,7 @@ const CARDS: StudentCard[] = [
     tint: "#e8f1ff",
     accent: "#1f6fe5",
     icon: <Home className="w-6 h-6" style={{ color: "#1f6fe5" }} />,
+    href: "/accommodation",
   },
   {
     title: "Food & Mess",
@@ -33,7 +34,7 @@ const CARDS: StudentCard[] = [
     tint: "#f3e8ff",
     accent: "#7c3aed",
     icon: <Bus className="w-6 h-6" style={{ color: "#7c3aed" }} />,
-    isTransport: true,
+    href: "/transport",
   },
   {
     title: "Part-time Jobs",
@@ -136,8 +137,11 @@ export function AboutSection() {
                   <h4 className="text-lg font-bold text-[#10233f]">
                     {card.title}
                   </h4>
-                  {card.isTransport ? (
-                    <span className="inline-flex items-center gap-1 text-xs font-semibold text-[#7c3aed] group-hover:translate-x-1 transition-transform">
+                  {card.href ? (
+                    <span
+                      className="inline-flex items-center gap-1 text-xs font-semibold group-hover:translate-x-1 transition-transform"
+                      style={{ color: card.accent }}
+                    >
                       <span>Explore</span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </span>
@@ -153,12 +157,12 @@ export function AboutSection() {
               </div>
             )
 
-            if (card.isTransport) {
+            if (card.href) {
               return (
                 <Link
                   key={card.title}
-                  href="/transport"
-                  className="block group locano-card-interactive"
+                  href={card.href}
+                  className="block group locano-card-interactive cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1f6fe5] touch-manipulation"
                 >
                   {cardContent}
                 </Link>

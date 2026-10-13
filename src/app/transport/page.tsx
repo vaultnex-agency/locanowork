@@ -1,15 +1,17 @@
 import type { Metadata } from "next"
+import { TransportHero } from "@/components/TransportHero"
 import { RoutesSection } from "@/components/RoutesSection"
 
 export const metadata: Metadata = {
-  title: "Bus Routes",
-  description: "Complete directory of Mangaluru city bus routes, numbers, and key stops.",
+  title: "Bus Routes & Transport Search",
+  description: "Search Mangaluru city bus routes, bus numbers, timings, stops, and view the complete route directory.",
 }
 
 export default function TransportPage() {
   return (
-    <div className="pt-8">
-      <RoutesSection isFullPage={true} />
+    <div>
+      <TransportHero />
+      <RoutesSection isFullPage={false} />
     </div>
   )
 }

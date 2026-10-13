@@ -77,9 +77,16 @@ export function Footer() {
               Student Platform
             </div>
             <ul className="space-y-2 text-xs text-slate-400">
-              <li className="flex items-center gap-2">
-                <span>Accommodation & PGs</span>
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400">Soon</span>
+              <li>
+                <Link
+                  href="/accommodation"
+                  className="hover:text-white transition-colors flex items-center justify-between group"
+                >
+                  <span className="text-slate-300 group-hover:text-white">Accommodation &amp; PGs</span>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-900/50 text-blue-300 border border-blue-700/50">
+                    Explore
+                  </span>
+                </Link>
               </li>
               <li className="flex items-center gap-2">
                 <span>Food & Mess finder</span>

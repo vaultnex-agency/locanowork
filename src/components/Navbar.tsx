@@ -5,13 +5,13 @@ import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { useModal } from "@/context/ModalContext"
-import { Search, User, Compass } from "lucide-react"
+import { User } from "lucide-react"
 
 export function Navbar() {
   const pathname = usePathname()
-  const { openSearch, openAccount } = useModal()
+  const { openAccount } = useModal()
   const [isScrolled, setIsScrolled] = useState(false)
-  const [activeSection, setActiveSection] = useState<"hero" | "routes" | "about" | null>(
+  const [activeSection, setActiveSection] = useState<"hero" | "about" | null>(
     pathname === "/" ? "hero" : null
   )
 
@@ -20,8 +20,8 @@ export function Navbar() {
       setIsScrolled(window.scrollY > 24)
 
       if (pathname === "/") {
-        const sectionIds = ["hero", "routes", "about"] as const
-        let active: "hero" | "routes" | "about" = "hero"
+        const sectionIds = ["hero", "about"] as const
+        let active: "hero" | "about" = "hero"
         for (const id of sectionIds) {
           const el = document.getElementById(id)
           if (el && el.getBoundingClientRect().top <= 150) {
@@ -40,9 +40,7 @@ export function Navbar() {
   }, [pathname])
 
   const isHomeActive = pathname === "/" && activeSection === "hero"
-  const isRoutesActive =
-    pathname.startsWith("/transport") ||
-    (pathname === "/" && activeSection === "routes")
+  const isRoutesActive = pathname.startsWith("/transport")
   const isAboutActive =
     pathname === "/about" ||
     (pathname === "/" && activeSection === "about")
@@ -84,10 +82,18 @@ export function Navbar() {
             Home
           </Link>
           <Link
-            href={pathname === "/" ? "#routes" : "/transport"}
+            href="/transport"
             className={`px-2.5 sm:px-3 py-1.5 rounded-full transition-colors ${isRoutesActive ? activeCls : inactiveCls}`}
           >
             Routes
+          </Link>
+          <Link
+            href="/accommodation"
+            className={`px-2.5 sm:px-3 py-1.5 rounded-full transition-colors ${
+              pathname.startsWith("/accommodation") ? activeCls : inactiveCls
+            }`}
+          >
+            Accommodation
           </Link>
           <Link
             href={pathname === "/" ? "#about" : "/about"}
@@ -96,20 +102,6 @@ export function Navbar() {
             About
           </Link>
         </div>
-
-        {/* DIVIDER */}
-        <div className="w-[1px] h-4 bg-slate-200 mx-1 sm:mx-1.5" />
-
-        {/* SEARCH TRIGGER */}
-        <button
-          type="button"
-          onClick={() => openSearch("location")}
-          className="p-1.5 sm:px-3 sm:py-1.5 rounded-full hover:bg-slate-100/80 text-slate-700 hover:text-[#1f6fe5] transition-colors flex items-center gap-1.5 text-xs sm:text-sm font-medium"
-          aria-label="Search routes and buses"
-        >
-          <Search className="w-4 h-4 text-slate-600" />
-          <span className="hidden sm:inline">Search</span>
-        </button>
 
         {/* SIGN IN BUTTON */}
         <button

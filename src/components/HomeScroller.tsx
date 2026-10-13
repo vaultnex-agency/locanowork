@@ -12,7 +12,7 @@ export function HomeScroller() {
       return
     }
 
-    const sectionIds = ["hero", "routes", "about"]
+    const sectionIds = ["hero", "about"]
 
     const getSections = () => {
       return sectionIds
