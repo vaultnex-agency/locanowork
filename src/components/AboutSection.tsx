@@ -1,205 +1,146 @@
 import React from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { Home, Utensils, Bus, Briefcase, PhoneCall, Sparkles, ArrowRight, Clock } from "lucide-react"
-
-interface StudentCard {
-  title: string
-  desc: string
-  tint: string
-  accent: string
-  icon: React.ReactNode
-  href?: string
-}
-
-const CARDS: StudentCard[] = [
-  {
-    title: "Accommodation",
-    desc: "Verified PGs and hostels near your college.",
-    tint: "#e8f1ff",
-    accent: "#1f6fe5",
-    icon: <Home className="w-6 h-6" style={{ color: "#1f6fe5" }} />,
-    href: "/accommodation",
-  },
-  {
-    title: "Food & Mess",
-    desc: "Affordable and reliable food options.",
-    tint: "#fff1e8",
-    accent: "#f97316",
-    icon: <Utensils className="w-6 h-6" style={{ color: "#f97316" }} />,
-  },
-  {
-    title: "Transport",
-    desc: "Bus routes, timings and key stops.",
-    tint: "#f3e8ff",
-    accent: "#7c3aed",
-    icon: <Bus className="w-6 h-6" style={{ color: "#7c3aed" }} />,
-    href: "/transport",
-  },
-  {
-    title: "Part-time Jobs",
-    desc: "Local opportunities for students.",
-    tint: "#e9f9ef",
-    accent: "#16a34a",
-    icon: <Briefcase className="w-6 h-6" style={{ color: "#16a34a" }} />,
-  },
-  {
-    title: "Emergency",
-    desc: "Important contacts and quick support.",
-    tint: "#ffe8ea",
-    accent: "#ef4444",
-    icon: <PhoneCall className="w-6 h-6" style={{ color: "#ef4444" }} />,
-  },
-  {
-    title: "More Services",
-    desc: "All essential student needs in one place.",
-    tint: "#fff6d8",
-    accent: "#e0a100",
-    icon: <Sparkles className="w-6 h-6" style={{ color: "#e0a100" }} />,
-  },
-]
+import { MapPin, Route, ArrowUpRight, ArrowRight, Megaphone } from "lucide-react"
 
 export function AboutSection() {
   return (
-    <section id="about" className="min-h-screen py-24 px-4 sm:px-6 lg:px-8 bg-white flex flex-col justify-center relative">
+    <section
+      id="about"
+      className="scroll-mt-24 pt-24 sm:pt-32 pb-16 sm:pb-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-white via-[#f4f8fe] to-[#f4f8fe] relative overflow-hidden"
+    >
       <div className="max-w-6xl mx-auto w-full">
-        {/* TOP STORY HEADER & PHOTO */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center mb-16">
-          <div className="lg:col-span-7 space-y-4">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-[#1f6fe5]">
-              <span>About</span>
+        {/* TOP ABOUT SECTION GRID */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center">
+          {/* LEFT COLUMN: Narrative & 3 Informational Points */}
+          <div className="lg:col-span-7">
+            {/* Category tag */}
+            <div className="text-xs font-bold text-[#1f6fe5] tracking-wider uppercase mb-3">
+              ABOUT LOCANO
             </div>
-            <div className="flex items-center gap-4">
-              <Image
-                src="/locano-logo.png"
-                alt="Locano Logo"
-                width={200}
-                height={200}
-                className="w-20 h-20 sm:w-24 sm:h-24 object-contain shrink-0"
-              />
-              <div>
-                <h2 className="text-4xl sm:text-5xl font-extrabold text-[#10233f] tracking-tight">
-                  LOCANO
-                </h2>
-                <div className="text-xl sm:text-2xl font-bold text-[#1f6fe5]">
-                  Settling made simple
-                </div>
-              </div>
-            </div>
-            <p className="text-base sm:text-lg text-slate-600 leading-relaxed pt-2">
-              LOCANO is a student-focused platform that brings together essential services to help you settle, explore and live comfortably in Mangalore.
+
+            {/* Main Headline */}
+            <h2 className="text-3xl sm:text-5xl font-extrabold text-[#10233f] tracking-tight leading-[1.12] mb-6">
+              <div>A new city.</div>
+              <div className="text-[#1f6fe5]">A simpler start.</div>
+            </h2>
+
+            {/* Subtext description */}
+            <p className="text-sm sm:text-base text-slate-600 leading-relaxed max-w-xl mb-10">
+              Moving to Mangaluru for college should be exciting, not confusing. LOCANO helps students and newcomers discover the essentials of city life, starting with the bus routes that connect them to where they need to go.
             </p>
-          </div>
 
-          {/* PHOTO ON LARGE SCREENS WITH WHITE CURVE ALONG LEFT EDGE */}
-          <div className="hidden lg:block lg:col-span-5 relative h-72 xl:h-80 rounded-3xl overflow-hidden shadow-xl border border-slate-100">
-            <Image
-              src="/about-students.png"
-              alt="Mangaluru university students"
-              fill
-              className="object-cover"
-              sizes="(min-width: 1024px) 40vw, 100vw"
-            />
-            {/* White curved SVG on the left edge */}
-            <svg
-              className="absolute left-0 top-0 bottom-0 h-full w-14 text-white pointer-events-none"
-              viewBox="0 0 100 100"
-              preserveAspectRatio="none"
-              aria-hidden="true"
-            >
-              <path d="M0,0 Q60,50 0,100 L0,0 Z" fill="currentColor" />
-            </svg>
-          </div>
-        </div>
+            {/* Three Informational Points */}
+            <div className="space-y-6 sm:space-y-7">
+              {/* Point 1 */}
+              <div className="flex items-start gap-4">
+                <div className="w-11 h-11 rounded-full bg-blue-50 text-[#1f6fe5] flex items-center justify-center shrink-0 shadow-2xs mt-0.5">
+                  <MapPin className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm sm:text-base font-bold text-[#10233f]">
+                    Made for Mangaluru
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-500 leading-relaxed mt-0.5">
+                    Local information designed around the needs of students and newcomers.
+                  </p>
+                </div>
+              </div>
 
-        {/* CARDS HEADING */}
-        <div className="mb-8">
-          <h3 className="text-2xl sm:text-3xl font-bold text-[#10233f] tracking-tight">
-            Everything a Student Needs
-          </h3>
-          <p className="text-sm text-slate-500 mt-1">
-            Access city transit now, with more dedicated student facilities coming soon.
-          </p>
-        </div>
+              {/* Point 2 */}
+              <div className="flex items-start gap-4">
+                <div className="w-11 h-11 rounded-full bg-blue-50 text-[#1f6fe5] flex items-center justify-center shrink-0 shadow-2xs mt-0.5">
+                  <Route className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm sm:text-base font-bold text-[#10233f]">
+                    Less searching, more exploring
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-500 leading-relaxed mt-0.5">
+                    Find useful transport information in one accessible place.
+                  </p>
+                </div>
+              </div>
 
-        {/* SIX CARDS */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-          {CARDS.map((card) => {
-            const cardContent = (
-              <div
-                className="h-full p-6 rounded-3xl border border-slate-100 locano-card transition-all"
-                style={{ backgroundColor: card.tint }}
+              {/* Point 3 */}
+              <div className="flex items-start gap-4">
+                <div className="w-11 h-11 rounded-full bg-[#10233f] text-white flex items-center justify-center shrink-0 shadow-2xs mt-0.5">
+                  <ArrowUpRight className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm sm:text-base font-bold text-[#10233f]">
+                    Built to grow with students
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-500 leading-relaxed mt-0.5">
+                    A broader student-settlement platform, with more services planned for the future.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* CTA Link below points */}
+            <div className="mt-10">
+              <Link
+                href="/transport"
+                className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-[#1f6fe5] hover:gap-2.5 transition-all group"
               >
-                <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center shadow-xs mb-5">
-                  {card.icon}
-                </div>
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-lg font-bold text-[#10233f]">
-                    {card.title}
-                  </h4>
-                  {card.href ? (
-                    <span
-                      className="inline-flex items-center gap-1 text-xs font-semibold group-hover:translate-x-1 transition-transform"
-                      style={{ color: card.accent }}
-                    >
-                      <span>Explore</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </span>
-                  ) : (
-                    <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-white/70 text-slate-500">
-                      Coming Soon
-                    </span>
-                  )}
-                </div>
-                <p className="text-sm text-slate-600 leading-relaxed">
-                  {card.desc}
-                </p>
-              </div>
-            )
+                <span>Explore Mangaluru with LOCANO</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+          </div>
 
-            if (card.href) {
-              return (
-                <Link
-                  key={card.title}
-                  href={card.href}
-                  className="block group locano-card-interactive cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1f6fe5] touch-manipulation"
-                >
-                  {cardContent}
-                </Link>
-              )
-            }
+          {/* RIGHT COLUMN: Coastal Card with Script Text & Decorative Shape */}
+          <div className="lg:col-span-5 flex justify-center lg:justify-end relative">
+            {/* Subtle decorative curved shape peeking behind right edge */}
+            <div
+              className="absolute -right-6 top-1/2 -translate-y-1/2 w-72 sm:w-84 h-72 sm:h-84 rounded-full bg-[#e1eefc]/70 blur-2xl -z-10 pointer-events-none"
+              aria-hidden="true"
+            />
+            <div
+              className="absolute right-0 top-1/2 -translate-y-1/2 w-48 sm:w-60 h-80 sm:h-96 rounded-r-full bg-[#e8f1fc]/50 -z-10 pointer-events-none hidden sm:block"
+              aria-hidden="true"
+            />
 
-            return (
-              <div key={card.title} className="cursor-default select-none">
-                {cardContent}
-              </div>
-            )
-          })}
+            {/* The Coastal Road Card with "Same city. New beginnings." */}
+            <div className="relative rounded-[28px] overflow-hidden shadow-xl border border-slate-100 max-w-[390px] w-full locano-card transition-transform duration-300 hover:scale-[1.01]">
+              <Image
+                src="/about-coast.png"
+                alt="Same city. New beginnings. Mangaluru coast"
+                width={389}
+                height={430}
+                className="w-full h-auto object-cover block"
+                priority
+              />
+            </div>
+          </div>
         </div>
 
-        {/* COMING SOON BAND */}
-        <div className="p-6 rounded-3xl bg-[#f4f7fb] border border-slate-200/70 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-white text-[#1f6fe5] flex items-center justify-center shadow-xs shrink-0">
-              <Clock className="w-5 h-5" />
+        {/* BOTTOM CTA BANNER: Built for students. Made for Mangaluru. */}
+        <div className="mt-16 sm:mt-24 p-6 sm:p-8 rounded-3xl bg-[#eaf3fe] border border-blue-100/80 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-xs">
+          <div className="flex items-center gap-4 text-center sm:text-left flex-col sm:flex-row">
+            <div className="w-14 h-14 rounded-full bg-white text-[#1f6fe5] flex items-center justify-center shadow-xs shrink-0">
+              <Megaphone className="w-6 h-6" />
             </div>
             <div>
-              <div className="text-sm font-bold text-[#10233f]">
-                Coming Soon: Full Student Settlement Platform
-              </div>
-              <div className="text-xs text-slate-500 mt-0.5">
-                Hostel verifications, student mess ratings, part-time opportunities and campus helplines are currently in active development.
-              </div>
+              <h3 className="text-lg sm:text-xl font-bold text-[#10233f]">
+                Built for students. Made for Mangaluru.
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+                Find what you need, when you need it.
+              </p>
             </div>
           </div>
           <Link
             href="/transport"
-            className="px-5 py-2.5 rounded-full bg-[#10233f] text-white hover:bg-[#1f6fe5] text-xs font-semibold transition-colors shrink-0 shadow-xs"
+            className="px-6 py-3 rounded-full bg-[#10233f] text-white hover:bg-[#1f6fe5] transition-colors text-xs sm:text-sm font-semibold flex items-center gap-2 shadow-xs shrink-0"
           >
-            Use Bus Directory
+            <span>Get Started</span>
+            <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
       </div>
     </section>
   )
 }
+

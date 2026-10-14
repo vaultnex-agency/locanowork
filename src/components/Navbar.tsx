@@ -44,8 +44,8 @@ export function Navbar() {
   const isAboutActive =
     pathname === "/about" ||
     (pathname === "/" && activeSection === "about")
-  const activeCls = "text-[#1f6fe5] bg-blue-50/80"
-  const inactiveCls = "hover:text-[#1f6fe5] hover:bg-slate-100/60"
+  const activeCls = "text-[#1f6fe5] bg-[#e0efff] font-semibold"
+  const inactiveCls = "text-slate-700 hover:text-[#1f6fe5] hover:bg-slate-100/60 font-medium"
 
   return (
     <header className="fixed top-5 left-0 right-0 z-40 flex justify-center px-4 pointer-events-none">
