@@ -81,24 +81,30 @@ export function HomeHero() {
           </Link>
 
           {/* 2. FOOD & MESS CARD */}
-          <div className="block p-6 sm:p-7 bg-white/95 backdrop-blur-md rounded-3xl border border-white/80 locano-card transition-all shadow-md shadow-blue-950/5">
-            <div className="w-12 h-12 rounded-2xl bg-orange-50 text-[#ea580c] flex items-center justify-center mb-5 shadow-2xs">
+          <Link
+            href="/mess"
+            aria-label="Explore Mangaluru student food and mess directory"
+            className="group block p-6 sm:p-7 bg-white/95 backdrop-blur-md rounded-3xl border border-white/80 locano-card locano-card-interactive transition-all shadow-md shadow-blue-950/5"
+          >
+            <div className="w-12 h-12 rounded-2xl bg-orange-50 text-[#ea580c] flex items-center justify-center mb-5 group-hover:bg-[#ea580c] group-hover:text-white transition-colors shadow-2xs">
               <Utensils className="w-6 h-6" />
             </div>
             <div className="flex items-center justify-between mb-2">
-              <h2 className="text-lg font-bold text-[#10233f]">Food &amp; Mess</h2>
-              <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-[#fef3c7] text-[#b45309]">
-                Coming Soon
+              <h2 className="text-lg font-bold text-[#10233f] group-hover:text-[#ea580c] transition-colors">
+                Food &amp; Mess
+              </h2>
+              <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-[#ffedd5] text-[#c2410c]">
+                Available
               </span>
             </div>
             <p className="text-xs sm:text-[13px] text-slate-500 leading-relaxed mb-6">
               Daily meals, monthly mess passes, and reliable student tiffin services.
             </p>
-            <div className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-400">
-              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-              <span>In active preparation</span>
+            <div className="inline-flex items-center gap-1.5 text-xs font-bold text-[#ea580c] group-hover:translate-x-1 transition-transform">
+              <span>Browse Messes</span>
+              <ArrowRight className="w-3.5 h-3.5" />
             </div>
-          </div>
+          </Link>
 
           {/* 3. TRANSPORT CARD */}
           <Link

@@ -113,11 +113,13 @@ export function Footer() {
                   <span>Accommodation &amp; PGs</span>
                 </Link>
               </li>
-              <li className="flex items-center gap-2">
-                <span>Food &amp; Mess finder</span>
-                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-slate-800 text-slate-400 font-medium">
-                  Soon
-                </span>
+              <li>
+                <Link
+                  href="/mess"
+                  className="hover:text-white transition-colors flex items-center gap-2"
+                >
+                  <span>Food &amp; Mess directory</span>
+                </Link>
               </li>
               <li className="flex items-center gap-2">
                 <span>Part-time Student Jobs</span>

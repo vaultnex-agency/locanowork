@@ -3,8 +3,23 @@
 import React, { useState } from "react"
 import { AlertCircle, X, Send } from "lucide-react"
 
-export function EnquiryPreviewButton({ listingName }: { listingName: string }) {
+interface EnquiryPreviewButtonProps {
+  listingName: string
+  category?: "accommodation" | "mess"
+  buttonText?: string
+}
+
+export function EnquiryPreviewButton({
+  listingName,
+  category = "accommodation",
+  buttonText,
+}: EnquiryPreviewButtonProps) {
   const [isOpen, setIsOpen] = useState(false)
+  const isMess = category === "mess"
+
+  const defaultButtonLabel = isMess
+    ? "Enquire for Mess Pass (Preview Only)"
+    : "Enquire Now (Preview Only)"
 
   return (
     <>
@@ -14,7 +29,7 @@ export function EnquiryPreviewButton({ listingName }: { listingName: string }) {
         className="w-full py-3.5 px-6 rounded-full bg-[#1f6fe5] hover:bg-blue-600 text-white font-bold text-sm transition-all shadow-md shadow-blue-500/20 flex items-center justify-center gap-2 group cursor-pointer"
       >
         <Send className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-        <span>Enquire Now (Preview Only)</span>
+        <span>{buttonText || defaultButtonLabel}</span>
       </button>
 
       {isOpen && (
@@ -40,7 +55,8 @@ export function EnquiryPreviewButton({ listingName }: { listingName: string }) {
                 Preview Enquiry Action
               </h3>
               <p className="text-xs text-slate-500 mt-1">
-                Property: <span className="font-semibold text-slate-700">{listingName}</span>
+                {isMess ? "Mess / Provider: " : "Property: "}
+                <span className="font-semibold text-slate-700">{listingName}</span>
               </p>
             </div>
 
@@ -49,12 +65,22 @@ export function EnquiryPreviewButton({ listingName }: { listingName: string }) {
                 <strong>This is a fictional demo listing.</strong> In the production platform, submitting an enquiry will:
               </p>
               <ul className="list-disc pl-4 space-y-1 text-slate-500">
-                <li>Verify your student phone number</li>
-                <li>Generate a unique reference tracking ID</li>
-                <li>Unlock the verified property owner’s direct contact and exact map pin</li>
+                {isMess ? (
+                  <>
+                    <li>Verify your student phone number & college ID</li>
+                    <li>Generate a trial meal pass or subscription token</li>
+                    <li>Unlock the mess manager&apos;s direct WhatsApp contact & map location</li>
+                  </>
+                ) : (
+                  <>
+                    <li>Verify your student phone number</li>
+                    <li>Generate a unique reference tracking ID</li>
+                    <li>Unlock the verified property owner&apos;s direct contact and exact map pin</li>
+                  </>
+                )}
               </ul>
               <p className="text-[11px] text-slate-400 pt-1">
-                Real database submission and booking are disabled in this phase.
+                Real database submission and live booking/orders are disabled in this phase.
               </p>
             </div>
 
@@ -64,7 +90,7 @@ export function EnquiryPreviewButton({ listingName }: { listingName: string }) {
                 onClick={() => setIsOpen(false)}
                 className="w-full py-2.5 rounded-full bg-[#10233f] text-white text-xs font-semibold hover:bg-slate-800 transition-colors"
               >
-                Understood & Close
+                Understood &amp; Close
               </button>
             </div>
           </div>
