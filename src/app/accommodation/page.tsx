@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { mockAccommodations, DEMO_DISCLAIMER_TEXT } from "@/data/mock-pgs"
 import type { GenderPreference, AccommodationType } from "@/types/accommodation"
 import {
@@ -136,8 +137,18 @@ export default function AccommodationPage() {
             return (
               <div
                 key={listing.id}
-                className="bg-white rounded-3xl p-6 border border-slate-100 locano-card locano-card-interactive flex flex-col justify-between group transition-all"
+                className="bg-white rounded-3xl p-6 border border-slate-100 overflow-hidden locano-card locano-card-interactive flex flex-col justify-between group transition-all"
               >
+                <div className="relative -mx-6 -mt-6 mb-5 h-44 overflow-hidden rounded-t-3xl bg-slate-100">
+                  <Image
+                    src={listing.sampleImage || "/accommodation-greenfield.png"}
+                    alt={`${listing.name} accommodation exterior`}
+                    fill
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    sizes="(max-width: 768px) 100vw, 33vw"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/35 to-transparent" />
+                </div>
                 <div>
                   {/* CARD HEADER TAGS */}
                   <div className="flex items-center justify-between gap-2 mb-3">
