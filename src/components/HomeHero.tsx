@@ -2,7 +2,7 @@
 
 import React from "react"
 import Link from "next/link"
-import { Home, Utensils, Bus, ArrowRight } from "lucide-react"
+import { Home, Utensils, Bus, Siren, ArrowRight } from "lucide-react"
 
 export function HomeHero() {
   return (
@@ -54,7 +54,7 @@ export function HomeHero() {
       {/* LOWER PART OF HERO: Three Service Cards */}
       <div className="relative z-10 max-w-6xl mx-auto w-full mt-8 sm:mt-12">
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* 1. ACCOMMODATION CARD */}
           <Link
             href="/accommodation"
@@ -128,6 +128,32 @@ export function HomeHero() {
             </p>
             <div className="inline-flex items-center gap-1.5 text-xs font-bold text-[#7c3aed] group-hover:translate-x-1 transition-transform">
               <span>Find Bus Routes</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </div>
+          </Link>
+
+          {/* 4. EMERGENCY SERVICES CARD */}
+          <Link
+            href="/emergency"
+            aria-label="View emergency services for Mangaluru"
+            className="group block p-6 sm:p-7 bg-white/95 backdrop-blur-md rounded-3xl border border-white/80 locano-card locano-card-interactive transition-all shadow-md shadow-blue-950/5"
+          >
+            <div className="w-12 h-12 rounded-2xl bg-red-50 text-[#dc2626] flex items-center justify-center mb-5 group-hover:bg-[#dc2626] group-hover:text-white transition-colors shadow-2xs">
+              <Siren className="w-6 h-6" />
+            </div>
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-lg font-bold text-[#10233f] group-hover:text-[#dc2626] transition-colors">
+                Emergency Services
+              </h2>
+              <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-red-50 text-[#dc2626]">
+                Essential
+              </span>
+            </div>
+            <p className="text-xs sm:text-[13px] text-slate-500 leading-relaxed mb-6">
+              Find essential police, ambulance, fire, and women&apos;s helpline information.
+            </p>
+            <div className="inline-flex items-center gap-1.5 text-xs font-bold text-[#dc2626] group-hover:translate-x-1 transition-transform">
+              <span>View Emergency Help</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </div>
           </Link>
