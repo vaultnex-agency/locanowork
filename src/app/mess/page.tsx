@@ -12,6 +12,8 @@ import {
   Filter,
   AlertCircle,
   Sparkles,
+  Search,
+  X,
 } from "lucide-react"
 
 type FilterDietary = "All" | DietaryType
@@ -20,21 +22,20 @@ type FilterService = "All" | ServiceType
 export default function MessListingPage() {
   const [dietaryFilter, setDietaryFilter] = useState<FilterDietary>("All")
   const [serviceFilter, setServiceFilter] = useState<FilterService>("All")
-  const [selectedArea, setSelectedArea] = useState<string>("All Areas")
-
-  const areas = useMemo(() => {
-    const list = Array.from(new Set(mockMesses.map((item) => item.area)))
-    return ["All Areas", ...list]
-  }, [])
+  const [locationQuery, setLocationQuery] = useState("")
 
   const filteredListings = useMemo(() => {
     return mockMesses.filter((item) => {
       if (dietaryFilter !== "All" && item.dietary !== dietaryFilter) return false
       if (serviceFilter !== "All" && item.serviceType !== serviceFilter) return false
-      if (selectedArea !== "All Areas" && item.area !== selectedArea) return false
+      const normalizedQuery = locationQuery.trim().toLowerCase()
+      if (
+        normalizedQuery &&
+        !`${item.area} ${item.nearestLandmark}`.toLowerCase().includes(normalizedQuery)
+      ) return false
       return true
     })
-  }, [dietaryFilter, serviceFilter, selectedArea])
+  }, [dietaryFilter, serviceFilter, locationQuery])
 
   return (
     <div className="min-h-screen bg-[#f4f8fc] pt-28 pb-20 px-4 sm:px-6 lg:px-8">
@@ -105,19 +106,26 @@ export default function MessListingPage() {
                 </button>
               ))}
 
-              <div className="ml-auto w-full sm:w-auto mt-2 sm:mt-0">
-                <select
-                  value={selectedArea}
-                  onChange={(e) => setSelectedArea(e.target.value)}
-                  aria-label="Filter messes by Mangaluru area"
-                  className="w-full sm:w-auto px-4 py-1.5 rounded-full text-xs font-medium bg-slate-50 border border-slate-200 text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#ea580c] cursor-pointer"
-                >
-                  {areas.map((area) => (
-                    <option key={area} value={area}>
-                      {area}
-                    </option>
-                  ))}
-                </select>
+              <div className="relative ml-auto w-full sm:w-72 mt-2 sm:mt-0">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#ea580c]" aria-hidden="true" />
+                <input
+                  type="search"
+                  value={locationQuery}
+                  onChange={(e) => setLocationQuery(e.target.value)}
+                  placeholder="Search by area or landmark"
+                  aria-label="Search messes by area or landmark"
+                  className="w-full h-10 pl-9 pr-9 rounded-full text-xs font-medium bg-slate-50 border border-slate-200 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ea580c]"
+                />
+                {locationQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setLocationQuery("")}
+                    aria-label="Clear location search"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full text-slate-400 hover:bg-slate-200 hover:text-slate-700 flex items-center justify-center"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -245,7 +253,7 @@ export default function MessListingPage() {
               onClick={() => {
                 setDietaryFilter("All")
                 setServiceFilter("All")
-                setSelectedArea("All Areas")
+                setLocationQuery("")
               }}
               className="mt-2 px-4 py-2 rounded-full bg-[#ea580c] text-white text-xs font-semibold hover:bg-orange-700 transition-colors cursor-pointer"
             >
