@@ -96,6 +96,14 @@ export function Navbar() {
             Accommodation
           </Link>
           <Link
+            href="/mess"
+            className={`px-2.5 sm:px-3 py-1.5 rounded-full transition-colors ${
+              pathname.startsWith("/mess") ? activeCls : inactiveCls
+            }`}
+          >
+            <span className="hidden sm:inline">Food &amp; </span>Mess
+          </Link>
+          <Link
             href={pathname === "/" ? "#about" : "/about"}
             className={`px-2.5 sm:px-3 py-1.5 rounded-full transition-colors ${isAboutActive ? activeCls : inactiveCls}`}
           >

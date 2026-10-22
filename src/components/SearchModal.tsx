@@ -6,18 +6,14 @@ import { LocationSearch } from "./LocationSearch"
 import { BusNumberSearch } from "./BusNumberSearch"
 import { X, MapPin, Bus } from "lucide-react"
 
-export function SearchModal() {
-  const { isSearchOpen, closeSearch, searchTab } = useModal()
-  const [activeTab, setActiveTab] = useState<"location" | "bus">(searchTab || "location")
-
-  // Sync tab if opened with specific tab
-  React.useEffect(() => {
-    if (searchTab) {
-      setActiveTab(searchTab)
-    }
-  }, [searchTab, isSearchOpen])
-
-  if (!isSearchOpen) return null
+function SearchModalDialog({
+  initialTab,
+  closeSearch,
+}: {
+  initialTab: "location" | "bus"
+  closeSearch: () => void
+}) {
+  const [activeTab, setActiveTab] = useState<"location" | "bus">(initialTab)
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 p-4 bg-slate-900/40 backdrop-blur-sm animate-fadeIn">
@@ -78,5 +74,19 @@ export function SearchModal() {
         )}
       </div>
     </div>
+  )
+}
+
+export function SearchModal() {
+  const { isSearchOpen, closeSearch, searchTab } = useModal()
+
+  if (!isSearchOpen) return null
+
+  return (
+    <SearchModalDialog
+      key={searchTab || "location"}
+      initialTab={searchTab || "location"}
+      closeSearch={closeSearch}
+    />
   )
 }

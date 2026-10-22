@@ -4,7 +4,7 @@ import { notFound } from "next/navigation"
 import { getBus, segmentJourney, fullJourney, redirectedRoads, busRouteLabel } from "@/lib/bus-service"
 import { formatMinutes, formatKm, indicativeFare, formatInr } from "@/lib/format"
 import { RouteMap } from "@/components/RouteMap"
-import { ArrowLeft, MapPin, AlertCircle, ArrowRight, Info, ShieldCheck, Compass } from "lucide-react"
+import { ArrowLeft, AlertCircle, ArrowRight, Info, Compass } from "lucide-react"
 
 interface BusPageProps {
   params: Promise<{ id: string }>

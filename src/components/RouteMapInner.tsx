@@ -69,15 +69,19 @@ export default function RouteMapInner({
   stops,
   fromId,
   toId,
-  highlightIds = [],
 }: RouteMapInnerProps) {
   if (stops.length === 0) return null
 
   const center: [number, number] = [stops[0].lat, stops[0].lng]
   const polylineCoords: [number, number][] = stops.map((s) => [s.lat, s.lng])
 
-  const startId = fromId || stops[0]?.id
-  const endId = toId || stops[stops.length - 1]?.id
+  const startIndex = fromId ? stops.findIndex((s) => s.id === fromId) : 0
+  const effectiveStartIndex = startIndex !== -1 ? startIndex : 0
+
+  const endIndex = toId
+    ? stops.map((s) => s.id).lastIndexOf(toId)
+    : stops.length - 1
+  const effectiveEndIndex = endIndex !== -1 ? endIndex : stops.length - 1
 
   return (
     <MapContainer
@@ -105,10 +109,10 @@ export default function RouteMapInner({
         let type: "start" | "end" | "intermediate" = "intermediate"
         let label = ""
 
-        if (stop.id === startId || idx === 0) {
+        if (idx === effectiveStartIndex) {
           type = "start"
           label = "A"
-        } else if (stop.id === endId || idx === stops.length - 1) {
+        } else if (idx === effectiveEndIndex) {
           type = "end"
           label = "B"
         }

@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import React, { useState } from "react"
 import { useModal } from "@/context/ModalContext"
 import Link from "next/link"
 import { X, CheckCircle2, AlertCircle, ArrowRight, ShieldCheck } from "lucide-react"

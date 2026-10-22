@@ -1,10 +1,10 @@
 "use client"
 
-import React, { useState, useEffect, useRef } from "react"
+import React, { useState, useEffect, useRef, useSyncExternalStore } from "react"
 import { useRouter } from "next/navigation"
 import { searchStops, resolveStop, getStop } from "@/lib/bus-service"
 import type { Stop } from "@/data/stops"
-import { pushRecent, readRecent, clearRecent, formatAgo, RECENT_EVENT, type RecentSearch } from "@/lib/recent-searches"
+import { pushRecent, clearRecent, formatAgo, subscribeRecent, getRecentSnapshot } from "@/lib/recent-searches"
 import { ArrowUpDown, Search, MapPin, Navigation, Clock, X, AlertCircle } from "lucide-react"
 
 interface LocationSearchProps {
@@ -27,17 +27,10 @@ export function LocationSearch({ onSuccess, showRecents = true, className = "" }
   const [showToSuggestions, setShowToSuggestions] = useState(false)
 
   const [error, setError] = useState("")
-  const [recents, setRecents] = useState<RecentSearch[]>([])
+  const recents = useSyncExternalStore(subscribeRecent, getRecentSnapshot, () => [])
 
   const fromRef = useRef<HTMLDivElement>(null)
   const toRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    setRecents(readRecent())
-    const handleUpdate = () => setRecents(readRecent())
-    window.addEventListener(RECENT_EVENT, handleUpdate)
-    return () => window.removeEventListener(RECENT_EVENT, handleUpdate)
-  }, [])
 
   // Close suggestions when clicking outside
   useEffect(() => {

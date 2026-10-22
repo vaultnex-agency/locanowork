@@ -10,10 +10,6 @@ import {
   CheckCircle2,
   AlertCircle,
   Home,
-  Shield,
-  Utensils,
-  DollarSign,
-  Calendar,
   Sparkles,
   Info,
 } from "lucide-react"

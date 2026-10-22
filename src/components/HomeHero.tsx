@@ -2,7 +2,7 @@
 
 import React from "react"
 import Link from "next/link"
-import { Home, Utensils, Bus, ArrowRight, Sparkles } from "lucide-react"
+import { Home, Utensils, Bus, ArrowRight } from "lucide-react"
 
 export function HomeHero() {
   return (

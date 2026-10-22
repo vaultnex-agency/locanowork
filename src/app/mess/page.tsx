@@ -8,13 +8,10 @@ import type { DietaryType, ServiceType } from "@/types/mess"
 import {
   Utensils,
   MapPin,
-  Clock,
   ArrowRight,
   Filter,
   AlertCircle,
   Sparkles,
-  CheckCircle2,
-  CalendarCheck,
 } from "lucide-react"
 
 type FilterDietary = "All" | DietaryType

@@ -4,7 +4,7 @@ import React, { useState, useMemo } from "react"
 import Link from "next/link"
 import { buses, type Bus } from "@/data/buses"
 import { busesWithNumber, busRouteLabel, stopNames } from "@/lib/bus-service"
-import { Bus as BusIcon, ChevronLeft, ChevronRight, Layers, MapPin, ArrowRight } from "lucide-react"
+import { ChevronLeft, ChevronRight, Layers, MapPin, ArrowRight } from "lucide-react"
 
 export type RouteFilter =
   | "All Areas"

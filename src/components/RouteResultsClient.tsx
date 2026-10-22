@@ -4,7 +4,7 @@ import React, { useState, useMemo, useEffect, useRef } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import type { Stop } from "@/data/stops"
-import { formatMinutes, indicativeFare } from "@/lib/format"
+import { formatMinutes } from "@/lib/format"
 import { compareBusNumbers, searchStops, resolveStop, getStop, parseRouteSlug } from "@/lib/bus-service"
 import { resultCards, type ResultCard } from "@/lib/search-results"
 import { pushRecent } from "@/lib/recent-searches"
@@ -76,6 +76,10 @@ export function RouteResultsClient({ from, to, initialCards }: RouteResultsClien
     setCurrentFrom(from)
     setCurrentTo(to)
     setActiveFilter(getDefaultFilter(initialCards))
+    setEditingField(null)
+    setSearchText("")
+    setSuggestions([])
+    setError("")
   }
 
   // Recalculate results for current origin/destination, reusing initialCards for original journey
@@ -97,15 +101,6 @@ export function RouteResultsClient({ from, to, initialCards }: RouteResultsClien
       href: `/transport/route/${from.id}-to-${to.id}`,
     })
   }, [from, to])
-
-  // Reset editor and filter when route props change
-  useEffect(() => {
-    setActiveFilter(getDefaultFilter(initialCards))
-    setEditingField(null)
-    setSearchText("")
-    setSuggestions([])
-    setError("")
-  }, [from.id, to.id, initialCards])
 
   // Listen to popstate for browser Back/Forward navigation
   useEffect(() => {
@@ -143,18 +138,15 @@ export function RouteResultsClient({ from, to, initialCards }: RouteResultsClien
     window.history.pushState(null, "", nextHref)
   }
 
-  // Populate initial suggestions & focus input when editingField opens
+  // Focus input when editingField opens
   useEffect(() => {
     if (editingField) {
-      setSearchText("")
-      setError("")
-      setSuggestions(getInitialSuggestions(editingField === "from" ? currentTo.id : currentFrom.id))
       const timer = setTimeout(() => {
         inputRef.current?.focus()
       }, 40)
       return () => clearTimeout(timer)
     }
-  }, [editingField, currentFrom.id, currentTo.id])
+  }, [editingField])
 
   // Click outside to close editor
   useEffect(() => {
@@ -173,7 +165,14 @@ export function RouteResultsClient({ from, to, initialCards }: RouteResultsClien
   }, [editingField])
 
   const toggleEdit = (field: "from" | "to") => {
-    setEditingField((prev) => (prev === field ? null : field))
+    if (editingField === field) {
+      setEditingField(null)
+    } else {
+      setSearchText("")
+      setError("")
+      setSuggestions(getInitialSuggestions(field === "from" ? currentTo.id : currentFrom.id))
+      setEditingField(field)
+    }
   }
 
   const handleSearchChange = (val: string) => {
@@ -538,8 +537,6 @@ export function RouteResultsClient({ from, to, initialCards }: RouteResultsClien
         {/* CARDS LIST (LEFT 7 COLS) */}
         <div className="lg:col-span-7 space-y-4">
           {filteredAndSortedCards.map((card) => {
-            const fare = indicativeFare(card.minutes * 0.3) // indicative estimate
-
             return (
               <Link
                 key={card.id}

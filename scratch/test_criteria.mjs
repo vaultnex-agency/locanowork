@@ -1,6 +1,5 @@
-import { buses } from "../src/data/buses.ts";
-import { stops, stopById } from "../src/data/stops.ts";
-import { getBus, searchStops, resolveStop, matchBuses, busesWithNumber } from "../src/lib/bus-service.ts";
+import { stopById } from "../src/data/stops.ts";
+import { getBus, searchStops, resolveStop, matchBuses } from "../src/lib/bus-service.ts";
 
 console.log("=== CRITERION 2 ===");
 const bus1 = getBus("1");

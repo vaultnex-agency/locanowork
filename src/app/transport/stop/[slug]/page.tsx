@@ -3,7 +3,7 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { getStop, busesThroughStop, busRouteLabel, stopNames } from "@/lib/bus-service"
 import { RouteMap } from "@/components/RouteMap"
-import { MapPin, Bus, ArrowRight, ArrowLeft, Navigation, Compass } from "lucide-react"
+import { MapPin, Bus, ArrowRight, ArrowLeft, Navigation } from "lucide-react"
 
 interface StopPageProps {
   params: Promise<{ slug: string }>

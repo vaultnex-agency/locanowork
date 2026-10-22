@@ -6,7 +6,7 @@ import { nearestStops, busesThroughStop } from "@/lib/bus-service"
 import type { Stop } from "@/data/stops"
 import { formatMeters } from "@/lib/format"
 import { RouteMap } from "@/components/RouteMap"
-import { Navigation, MapPin, Bus, AlertCircle, ArrowRight, ArrowLeft, RefreshCw, Compass } from "lucide-react"
+import { Navigation, Bus, AlertCircle, ArrowRight, ArrowLeft, RefreshCw } from "lucide-react"
 
 type GeoState = "idle" | "loading" | "success" | "denied" | "error"
 
@@ -16,7 +16,7 @@ interface StopWithDistance {
 }
 
 export default function NearStopsPage() {
-  const [geoState, setGeoState] = useState<GeoState>("idle")
+  const [geoState, setGeoState] = useState<GeoState>("loading")
   const [errorMessage, setErrorMessage] = useState("")
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null)
   const [nearby, setNearby] = useState<StopWithDistance[]>([])
@@ -60,7 +60,47 @@ export default function NearStopsPage() {
 
   // Attempt automatic detection on mount
   useEffect(() => {
-    requestLocation()
+    if (typeof window === "undefined" || !("geolocation" in navigator)) {
+      const timer = setTimeout(() => {
+        setGeoState("error")
+        setErrorMessage("Geolocation is not supported by your browser.")
+      }, 0)
+      return () => clearTimeout(timer)
+    }
+
+    let active = true
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        if (!active) return
+        const { latitude, longitude } = position.coords
+        setCoords({ lat: latitude, lng: longitude })
+        const found = nearestStops(latitude, longitude, 10)
+        setNearby(found)
+        setGeoState("success")
+      },
+      (error) => {
+        if (!active) return
+        if (error.code === error.PERMISSION_DENIED) {
+          setGeoState("denied")
+          setErrorMessage(
+            "Location permission was denied. Please allow location access in your browser or search for stops by name."
+          )
+        } else {
+          setGeoState("error")
+          setErrorMessage(error.message || "Unable to determine your current location.")
+        }
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 60000,
+      }
+    )
+
+    return () => {
+      active = false
+    }
   }, [])
 
   return (

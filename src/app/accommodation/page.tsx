@@ -7,12 +7,9 @@ import type { GenderPreference, AccommodationType } from "@/types/accommodation"
 import {
   Home,
   MapPin,
-  CheckCircle2,
   ArrowRight,
   Filter,
   AlertCircle,
-  Users,
-  ShieldCheck,
   UtensilsCrossed,
   Sparkles,
 } from "lucide-react"

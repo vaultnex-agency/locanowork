@@ -20,6 +20,34 @@ function isRecent(value: unknown): value is RecentSearch {
   )
 }
 
+let cachedRaw: string | null = null
+let cachedSnapshot: RecentSearch[] = []
+
+export function getRecentSnapshot(): RecentSearch[] {
+  if (typeof window === "undefined") return []
+  try {
+    const raw = window.localStorage.getItem(KEY) || "[]"
+    if (raw !== cachedRaw) {
+      cachedRaw = raw
+      const parsed = JSON.parse(raw) as unknown
+      cachedSnapshot = Array.isArray(parsed) ? parsed.filter(isRecent).slice(0, 6) : []
+    }
+    return cachedSnapshot
+  } catch {
+    return []
+  }
+}
+
+export function subscribeRecent(callback: () => void): () => void {
+  if (typeof window === "undefined") return () => {}
+  window.addEventListener(RECENT_EVENT, callback)
+  window.addEventListener("storage", callback)
+  return () => {
+    window.removeEventListener(RECENT_EVENT, callback)
+    window.removeEventListener("storage", callback)
+  }
+}
+
 export function readRecent(): RecentSearch[] {
   if (typeof window === "undefined") return []
   try {

@@ -4,7 +4,7 @@ import React, { useState } from "react"
 import { useRouter } from "next/navigation"
 import { matchBuses, busRouteLabel, stopNames } from "@/lib/bus-service"
 import type { Bus } from "@/data/buses"
-import { Search, Bus as BusIcon, ArrowRight, X } from "lucide-react"
+import { Bus as BusIcon, ArrowRight, X } from "lucide-react"
 import Link from "next/link"
 
 interface BusNumberSearchProps {

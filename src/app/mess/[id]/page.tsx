@@ -13,8 +13,6 @@ import {
   Clock,
   Sparkles,
   Info,
-  Calendar,
-  ShieldCheck,
   Coffee,
 } from "lucide-react"
 
