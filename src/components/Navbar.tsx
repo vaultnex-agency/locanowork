@@ -52,7 +52,7 @@ export function Navbar() {
   return (
     <header className="fixed top-3 left-0 right-0 z-40 flex justify-center px-2 sm:top-5 sm:px-4 pointer-events-none">
       <nav
-        className={`pointer-events-auto relative flex w-full max-w-fit items-center gap-1 px-2 py-2 sm:w-auto sm:gap-2 sm:px-4 sm:py-2.5 rounded-full border border-slate-200/60 pill-navbar transition-all duration-420 ${
+        className={`pointer-events-auto relative flex w-full max-w-none items-center gap-2 px-3 py-2.5 sm:w-auto sm:gap-2 sm:px-4 sm:py-2.5 rounded-full border border-slate-200/60 pill-navbar transition-all duration-420 ${
           isScrolled
             ? "pill-navbar-scrolled bg-white/92 shadow-md shadow-slate-900/5"
             : "bg-white/80 backdrop-blur-md shadow-xs"
@@ -69,7 +69,7 @@ export function Navbar() {
               alt="Locano Logo"
               width={200}
               height={60}
-              className="h-9 sm:h-10 w-auto object-contain"
+              className="h-10 sm:h-10 w-auto object-contain"
               priority
             />
           </Link>
@@ -95,13 +95,13 @@ export function Navbar() {
         </div>
 
         {/* SIGN IN BUTTON */}
-        <button type="button" onClick={openAccount} className="ml-1 flex shrink-0 items-center gap-1.5 rounded-full bg-[#10233f] px-2.5 py-1.5 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-[#1f6fe5] sm:px-4 sm:text-sm">
+        <button type="button" onClick={openAccount} className="ml-1 flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-1.5 rounded-full bg-[#10233f] px-3 py-2 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-[#1f6fe5] sm:min-h-0 sm:min-w-0 sm:justify-start sm:px-4 sm:py-1.5 sm:text-sm">
           <User className="size-3.5" />
           <span className="hidden sm:inline">Sign In</span>
           <span className="sr-only sm:hidden">Sign In</span>
         </button>
 
-        <button type="button" aria-expanded={isMenuOpen} aria-controls="mobile-navigation" aria-label={isMenuOpen ? "Close navigation menu" : "Open navigation menu"} onClick={() => setIsMenuOpen((open) => !open)} className="flex size-9 shrink-0 items-center justify-center rounded-full text-[#10233f] transition-colors hover:bg-slate-100 sm:hidden">
+        <button type="button" aria-expanded={isMenuOpen} aria-controls="mobile-navigation" aria-label={isMenuOpen ? "Close navigation menu" : "Open navigation menu"} onClick={() => setIsMenuOpen((open) => !open)} className="flex size-11 shrink-0 items-center justify-center rounded-full text-[#10233f] transition-colors hover:bg-slate-100 sm:hidden">
           {isMenuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
         </button>
 
