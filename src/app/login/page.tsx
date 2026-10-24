@@ -5,7 +5,7 @@ import { ArrowLeft } from "lucide-react"
 
 export const metadata: Metadata = {
   title: "Sign In",
-  description: "Sign in to LOCANO or join the student waitlist for Mangaluru transit and settling services.",
+  description: "Sign in to LOCANO as a Student or PG Property Owner.",
 }
 
 export default function LoginPage() {
@@ -23,7 +23,7 @@ export default function LoginPage() {
         </div>
 
         <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 locano-card shadow-xl">
-          <AccountCard />
+          <AccountCard initialMode="signin" />
         </div>
       </div>
     </div>

@@ -12,6 +12,7 @@ export interface MealPlan {
 
 export interface MessListing {
   id: string
+  ownerId?: string | null
   name: string
   tagline: string
   cuisine: string
@@ -39,5 +40,8 @@ export interface MessListing {
   subscriptionRules: string[]
   description: string
   sampleImage: string
-  isDemo: true
+  images?: string[]
+  status?: "pending" | "published" | "rejected" | "archived"
+  isDemo?: boolean
+  createdAt?: string
 }

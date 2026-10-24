@@ -2,7 +2,8 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import Image from "next/image"
 import { notFound } from "next/navigation"
-import { getMessById, DEMO_DISCLAIMER_TEXT } from "@/data/mock-messes"
+import { fetchMessById } from "@/lib/services/mess"
+import { DEMO_DISCLAIMER_TEXT } from "@/data/mock-messes"
 import { EnquiryPreviewButton } from "@/components/EnquiryPreviewButton"
 import {
   ArrowLeft,
@@ -14,6 +15,7 @@ import {
   Sparkles,
   Info,
   Coffee,
+  ShieldCheck,
 } from "lucide-react"
 
 interface MessPageProps {
@@ -24,7 +26,7 @@ export async function generateMetadata({
   params,
 }: MessPageProps): Promise<Metadata> {
   const { id } = await params
-  const listing = getMessById(id)
+  const listing = await fetchMessById(id)
   if (!listing) return { title: "Mess Provider Not Found" }
   return {
     title: `${listing.name} · ${listing.area}`,
@@ -34,7 +36,7 @@ export async function generateMetadata({
 
 export default async function MessDetailPage({ params }: MessPageProps) {
   const { id } = await params
-  const listing = getMessById(id)
+  const listing = await fetchMessById(id)
 
   if (!listing) {
     notFound()
@@ -60,12 +62,14 @@ export default async function MessDetailPage({ params }: MessPageProps) {
         </div>
 
         {/* DEMO NOTICE BANNER */}
-        <div className="mb-6 p-4 rounded-2xl bg-amber-50 border border-amber-200/80 text-amber-900 text-xs sm:text-sm flex items-start gap-3 locano-card shadow-xs">
-          <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-          <div className="leading-relaxed">
-            <span className="font-bold">Preview Notice:</span> {DEMO_DISCLAIMER_TEXT}
+        {listing.isDemo && (
+          <div className="mb-6 p-4 rounded-2xl bg-amber-50 border border-amber-200/80 text-amber-900 text-xs sm:text-sm flex items-start gap-3 locano-card shadow-xs">
+            <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+            <div className="leading-relaxed">
+              <span className="font-bold">Preview Notice:</span> {DEMO_DISCLAIMER_TEXT}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* MAIN PROVIDER HEADER CARD */}
         <div className="p-6 sm:p-8 bg-white rounded-3xl border border-slate-100 locano-card mb-8">
@@ -83,9 +87,16 @@ export default async function MessDetailPage({ params }: MessPageProps) {
                 <span className="text-xs font-semibold px-3 py-1 rounded-full bg-orange-50 text-[#ea580c] border border-orange-200/60">
                   {listing.cuisine}
                 </span>
-                <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-500">
-                  Demo Listing
-                </span>
+                {listing.isDemo ? (
+                  <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-500">
+                    Demo Listing
+                  </span>
+                ) : (
+                  <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                    <span>Verified Mess</span>
+                  </span>
+                )}
               </div>
               <h1 className="text-2xl sm:text-4xl font-extrabold text-[#10233f] tracking-tight">
                 {listing.name}

@@ -4,6 +4,7 @@ export type SharingOption = "Single Room" | "Double Sharing" | "Triple Sharing" 
 
 export interface AccommodationListing {
   id: string
+  ownerId?: string | null
   name: string
   tagline: string
   type: AccommodationType
@@ -21,5 +22,8 @@ export interface AccommodationListing {
   noticePeriodDays: number
   description: string
   sampleImage: string
-  isDemo: true
+  images?: string[]
+  status?: "pending" | "published" | "rejected" | "archived"
+  isDemo?: boolean
+  createdAt?: string
 }
