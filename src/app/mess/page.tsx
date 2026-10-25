@@ -161,7 +161,7 @@ function MessListingContent() {
           </h1>
 
           {/* Subtitle */}
-          <p className="text-sm sm:text-base text-slate-600 max-w-xl leading-relaxed mb-7 font-normal">
+          <p className="text-sm sm:text-base text-[#0066FF] max-w-xl leading-relaxed mb-7 font-medium">
             From everyday meals to your favourite dishes, discover trusted student messes and tiffin services in Mangaluru — tasty, affordable and always close to you.
           </p>
 
@@ -173,8 +173,8 @@ function MessListingContent() {
                 <Home className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
               </div>
               <div>
-                <div className="text-xs sm:text-[13px] font-bold text-[#10233f] leading-tight">Feels like home</div>
-                <div className="text-[10px] sm:text-[11px] text-slate-500 leading-tight mt-0.5">Hygienic &amp; homely food</div>
+                <div className="text-xs sm:text-[13px] font-bold text-[#0066FF] leading-tight">Feels like home</div>
+                <div className="text-[10px] sm:text-[11px] text-[#0066FF] font-medium leading-tight mt-0.5">Hygienic &amp; homely food</div>
               </div>
             </div>
 
@@ -184,8 +184,8 @@ function MessListingContent() {
                 <Leaf className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
               </div>
               <div>
-                <div className="text-xs sm:text-[13px] font-bold text-[#10233f] leading-tight">Your favourite choices</div>
-                <div className="text-[10px] sm:text-[11px] text-slate-500 leading-tight mt-0.5">Veg &amp; non-veg options</div>
+                <div className="text-xs sm:text-[13px] font-bold text-[#0066FF] leading-tight">Your favourite choices</div>
+                <div className="text-[10px] sm:text-[11px] text-[#0066FF] font-medium leading-tight mt-0.5">Veg &amp; non-veg options</div>
               </div>
             </div>
 
@@ -195,8 +195,8 @@ function MessListingContent() {
                 <IndianRupee className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
               </div>
               <div>
-                <div className="text-xs sm:text-[13px] font-bold text-[#10233f] leading-tight">Student friendly</div>
-                <div className="text-[10px] sm:text-[11px] text-slate-500 leading-tight mt-0.5">Affordable prices</div>
+                <div className="text-xs sm:text-[13px] font-bold text-[#0066FF] leading-tight">Student friendly</div>
+                <div className="text-[10px] sm:text-[11px] text-[#0066FF] font-medium leading-tight mt-0.5">Affordable prices</div>
               </div>
             </div>
           </div>
