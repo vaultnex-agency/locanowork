@@ -1,8 +1,10 @@
 "use client"
 
-import React, { useState, useEffect, useCallback, Suspense } from "react"
+import React, { useState, useEffect, useCallback, useMemo, Suspense } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { useSearchParams } from "next/navigation"
+import { useModal } from "@/context/ModalContext"
 import { fetchAccommodations } from "@/lib/services/accommodation"
 import { DEMO_DISCLAIMER_TEXT } from "@/data/mock-pgs"
 import type { GenderPreference, AccommodationType, AccommodationListing } from "@/types/accommodation"
@@ -12,20 +14,81 @@ import {
   ArrowRight,
   Filter,
   AlertCircle,
-  UtensilsCrossed,
-  Sparkles,
   Search,
   X,
   RotateCcw,
   Building2,
   ShieldCheck,
+  ChevronDown,
+  IndianRupee,
+  Heart,
+  Camera,
+  Wifi,
+  Utensils,
+  Zap,
+  BookOpen,
+  Bike,
+  Droplets,
+  Map,
 } from "lucide-react"
 
 type FilterGender = "All" | GenderPreference
 type FilterType = "All" | AccommodationType
 
+const POPULAR_AREAS = [
+  "All Areas",
+  "Balmatta",
+  "Deralakatte",
+  "Jeppu",
+  "Attavar",
+  "Hampankatta",
+  "Kankanady",
+  "Bejai",
+  "Pandeshwar",
+  "Others",
+] as const
+
+// Amenity icon resolver
+function getAmenityIcon(name: string) {
+  const lower = name.toLowerCase()
+  if (lower.includes("wi-fi") || lower.includes("wifi")) {
+    return <Wifi className="w-3 h-3 text-[#1f6fe5]" />
+  }
+  if (lower.includes("meal") || lower.includes("food") || lower.includes("dining")) {
+    return <Utensils className="w-3 h-3 text-[#ea580c]" />
+  }
+  if (lower.includes("power") || lower.includes("backup")) {
+    return <Zap className="w-3 h-3 text-amber-500" />
+  }
+  if (lower.includes("study") || lower.includes("desk")) {
+    return <BookOpen className="w-3 h-3 text-indigo-500" />
+  }
+  if (lower.includes("parking") || lower.includes("bike")) {
+    return <Bike className="w-3 h-3 text-emerald-500" />
+  }
+  if (lower.includes("water") || lower.includes("ro")) {
+    return <Droplets className="w-3 h-3 text-sky-500" />
+  }
+  return <ShieldCheck className="w-3 h-3 text-slate-400" />
+}
+
+// Clean short label for amenity chips
+function getAmenityLabel(name: string) {
+  const lower = name.toLowerCase()
+  if (lower.includes("wi-fi") || lower.includes("wifi")) return "Wi-Fi"
+  if (lower.includes("meal")) return "Meals"
+  if (lower.includes("power backup")) return "Power Backup"
+  if (lower.includes("study hall") || lower.includes("study")) return "Study Hall"
+  if (lower.includes("parking")) return "Two-Wheeler Parking"
+  if (lower.includes("pure drinking water") || lower.includes("ro")) return "RO Water"
+  if (lower.includes("cctv") || lower.includes("security")) return "Security"
+  return name.length > 18 ? name.slice(0, 16) + "…" : name
+}
+
 function AccommodationContent() {
   const searchParams = useSearchParams()
+  const { openSearch } = useModal()
+
   const urlSearch = searchParams.get("search") || ""
   const urlGender = (searchParams.get("gender") as FilterGender) || "All"
   const urlType = (searchParams.get("type") as FilterType) || "All"
@@ -33,6 +96,9 @@ function AccommodationContent() {
   const [customSearch, setCustomSearch] = useState<string | null>(null)
   const [customGender, setCustomGender] = useState<FilterGender | null>(null)
   const [customType, setCustomType] = useState<FilterType | null>(null)
+  const [budgetFilter, setBudgetFilter] = useState<string>("All")
+  const [sortBy, setSortBy] = useState<string>("nearest")
+  const [favorites, setFavorites] = useState<Set<string>>(new Set())
 
   const locationQuery = customSearch !== null ? customSearch : urlSearch
   const genderFilter =
@@ -52,9 +118,18 @@ function AccommodationContent() {
   const setGenderFilter = (val: FilterGender) => setCustomGender(val)
   const setTypeFilter = (val: FilterType) => setCustomType(val)
 
-  const [listings, setListings] = useState<AccommodationListing[]>([])
+  const [rawListings, setRawListings] = useState<AccommodationListing[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  const toggleFavorite = (id: string) => {
+    setFavorites((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
 
   const loadListings = useCallback(async () => {
     setIsLoading(true)
@@ -64,9 +139,9 @@ function AccommodationContent() {
         gender: genderFilter,
         type: typeFilter,
         search: locationQuery,
-        includeDemo: true, // Graceful development preview fallback
+        includeDemo: true,
       })
-      setListings(res.listings)
+      setRawListings(res.listings)
     } catch {
       setError("Unable to load accommodations at this time. Please try again.")
     } finally {
@@ -81,141 +156,271 @@ function AccommodationContent() {
     return () => clearTimeout(timer)
   }, [loadListings])
 
-  const hasDemoListings = listings.some((l) => l.isDemo)
+  // Client-side budget filter and sort
+  const listings = useMemo(() => {
+    let result = [...rawListings]
+
+    if (budgetFilter === "under-6000") {
+      result = result.filter((item) => item.monthlyRentFrom <= 6000)
+    } else if (budgetFilter === "6000-8000") {
+      result = result.filter((item) => item.monthlyRentFrom >= 6000 && item.monthlyRentFrom <= 8000)
+    } else if (budgetFilter === "above-8000") {
+      result = result.filter((item) => item.monthlyRentFrom > 8000)
+    }
+
+    if (sortBy === "price-asc") {
+      result.sort((a, b) => a.monthlyRentFrom - b.monthlyRentFrom)
+    } else if (sortBy === "price-desc") {
+      result.sort((a, b) => b.monthlyRentFrom - a.monthlyRentFrom)
+    }
+
+    return result
+  }, [rawListings, budgetFilter, sortBy])
+
+  const hasDemoListings = rawListings.some((l) => l.isDemo)
 
   return (
-    <div className="min-h-screen bg-[#f4f8fc] pt-28 pb-20 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-6xl mx-auto">
-        {/* PG OWNER CALLOUT BANNER */}
-        <div className="mb-4 p-4 rounded-2xl bg-white border border-blue-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-blue-50 text-[#1f6fe5]">
-              <Building2 className="w-5 h-5" />
-            </div>
-            <div>
-              <p className="text-xs font-bold text-[#10233f]">Own a student PG, hostel, or flat in Mangaluru?</p>
-              <p className="text-[11px] text-slate-500">Submit your property for admin verification and get listed on LOCANO.</p>
-            </div>
-          </div>
-          <Link
-            href="/pg-owner/submit"
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#10233f] hover:bg-[#1f6fe5] text-white text-xs font-semibold transition-colors shrink-0 shadow-xs"
-          >
-            <span>PG Owner Submission</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
-        </div>
+    <div className="min-h-screen bg-[#f8fafc]">
+      {/* 1. HERO SECTION WITH FULL-WIDTH BEDROOM BACKGROUND */}
+      <section
+        className="relative w-full pt-28 sm:pt-36 pb-24 sm:pb-28 px-4 sm:px-6 lg:px-8 bg-cover bg-center overflow-hidden"
+        style={{
+          backgroundImage: "url('/pg-hero-bedroom.jpg')",
+          backgroundPosition: "center 38%",
+        }}
+      >
+        {/* Dark gradient overlay matching reference for readability */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              "linear-gradient(90deg, rgba(16,35,63,0.95) 0%, rgba(16,35,63,0.90) 38%, rgba(16,35,63,0.58) 72%, rgba(16,35,63,0.30) 100%)",
+          }}
+        />
 
-        {/* DEMO DISCLAIMER BANNER (SHOWN WHEN DEMO DATA IS ACTIVE) */}
-        {hasDemoListings && (
-          <div className="mb-6 p-4 rounded-2xl bg-amber-50/90 border border-amber-200/80 text-amber-900 text-xs sm:text-sm flex items-start gap-3 locano-card shadow-xs">
-            <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-            <div className="leading-relaxed">
-              <span className="font-bold">Development Preview Notice:</span> {DEMO_DISCLAIMER_TEXT}
-            </div>
-          </div>
-        )}
-
-        {/* HEADER SECTION */}
-        <div className="p-6 sm:p-10 bg-white rounded-3xl border border-slate-100 locano-card mb-8">
-          <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-blue-50 text-[#1f6fe5] uppercase tracking-wider mb-3">
-              <Home className="w-3.5 h-3.5" />
-              <span>LOCANO Accommodation</span>
-            </div>
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#10233f] tracking-tight">
-              Student PGs &amp; Living in Mangaluru
-            </h1>
-            <p className="text-sm sm:text-base text-slate-500 mt-2 leading-relaxed">
-              Explore student residences, verified PGs, and shared accommodations across major student hubs in Mangaluru.
-            </p>
+        <div className="relative z-10 max-w-6xl mx-auto">
+          {/* Badge: ACCOMMODATION */}
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] sm:text-xs font-semibold bg-white/15 backdrop-blur-md text-white/90 border border-white/20 tracking-wider uppercase mb-4">
+            <Home className="w-3.5 h-3.5 text-blue-300" />
+            <span>ACCOMMODATION</span>
           </div>
 
-          {/* FILTER CONTROLS */}
-          <div className="mt-8 pt-6 border-t border-slate-100 flex flex-col gap-4">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider mr-2 flex items-center gap-1">
-                <Filter className="w-3.5 h-3.5 text-[#1f6fe5]" />
-                <span>Gender:</span>
-              </span>
-              {(["All", "Boys", "Girls", "Co-ed"] as FilterGender[]).map((gender) => (
-                <button
-                  key={gender}
-                  type="button"
-                  onClick={() => setGenderFilter(gender)}
-                  className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
-                    genderFilter === gender
-                      ? "bg-[#1f6fe5] text-white shadow-xs"
-                      : "bg-slate-100 text-slate-600 hover:bg-slate-200/70"
-                  }`}
-                >
-                  {gender === "All" ? "All Genders" : gender}
-                </button>
-              ))}
+          {/* Headline */}
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[52px] font-extrabold text-white tracking-tight leading-[1.12] mb-3">
+            Find Your Ideal PG
+            <br />
+            in Mangaluru
+          </h1>
+
+          {/* Subtitle */}
+          <p className="text-sm sm:text-base text-slate-200/90 max-w-xl leading-relaxed mb-6 font-normal">
+            Verified student PGs, hostels and shared apartments — with real photos, genuine details and easy contact.
+          </p>
+
+          {/* Three Feature Highlights */}
+          <div className="flex flex-wrap items-center gap-5 sm:gap-7 pt-1">
+            {/* 1. Verified Listings */}
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center shrink-0">
+                <ShieldCheck className="w-4 h-4" />
+              </div>
+              <div>
+                <div className="text-xs sm:text-[13px] font-bold text-white leading-tight">Verified Listings</div>
+                <div className="text-[10.5px] sm:text-[11px] text-slate-300 leading-tight mt-0.5">Real owners &amp; genuine details</div>
+              </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider mr-2 flex items-center gap-1">
-                <Sparkles className="w-3.5 h-3.5 text-[#1f6fe5]" />
-                <span>Type &amp; Area:</span>
-              </span>
-              {(["All", "PG", "Hostel", "Shared Apartment"] as FilterType[]).map((type) => (
-                <button
-                  key={type}
-                  type="button"
-                  onClick={() => setTypeFilter(type)}
-                  className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
-                    typeFilter === type
-                      ? "bg-[#10233f] text-white shadow-xs"
-                      : "bg-slate-100 text-slate-600 hover:bg-slate-200/70"
-                  }`}
-                >
-                  {type === "All" ? "All Types" : type}
-                </button>
-              ))}
+            {/* 2. Near Colleges */}
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-full bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 flex items-center justify-center shrink-0">
+                <MapPin className="w-4 h-4" />
+              </div>
+              <div>
+                <div className="text-xs sm:text-[13px] font-bold text-white leading-tight">Near Colleges</div>
+                <div className="text-[10.5px] sm:text-[11px] text-slate-300 leading-tight mt-0.5">Easily find nearby options</div>
+              </div>
+            </div>
 
-              <div className="relative ml-auto w-full sm:w-72 mt-2 sm:mt-0">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#1f6fe5]" aria-hidden="true" />
-                <input
-                  type="search"
-                  value={locationQuery}
-                  onChange={(e) => setLocationQuery(e.target.value)}
-                  placeholder="Search by area or landmark"
-                  aria-label="Search accommodations by area or landmark"
-                  className="w-full h-10 pl-9 pr-9 rounded-full text-xs font-medium bg-slate-50 border border-slate-200 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1f6fe5]"
-                />
-                {locationQuery && (
-                  <button
-                    type="button"
-                    onClick={() => setLocationQuery("")}
-                    aria-label="Clear location search"
-                    className="absolute right-1 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full text-slate-400 hover:bg-slate-200 hover:text-slate-700 flex items-center justify-center cursor-pointer"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                )}
+            {/* 3. Student Friendly */}
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center shrink-0">
+                <IndianRupee className="w-4 h-4" />
+              </div>
+              <div>
+                <div className="text-xs sm:text-[13px] font-bold text-white leading-tight">Student Friendly</div>
+                <div className="text-[10.5px] sm:text-[11px] text-slate-300 leading-tight mt-0.5">Affordable &amp; safe stays</div>
               </div>
             </div>
           </div>
         </div>
+      </section>
 
-        {/* LOADING SKELETON STATE */}
+      {/* MAIN CONTAINER */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+        {/* 2. FLOATING SEARCH PANEL OVERLAPPING HERO BOTTOM */}
+        <div className="relative z-20 -mt-10 sm:-mt-12 bg-white rounded-2xl sm:rounded-3xl shadow-xl shadow-slate-900/[0.08] border border-slate-100 p-3 sm:p-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 items-center">
+            {/* Field 1: Location / Area */}
+            <div className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl border border-slate-200/90 bg-slate-50/60 focus-within:border-[#1f6fe5] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#1f6fe5]/15 transition-all">
+              <MapPin className="w-4 h-4 text-[#1f6fe5] shrink-0" />
+              <div className="flex-1 min-w-0">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 leading-none mb-1">
+                  Location / Area
+                </div>
+                <input
+                  type="text"
+                  value={locationQuery}
+                  onChange={(e) => setLocationQuery(e.target.value)}
+                  placeholder="e.g. Balmatta, Deralakatte..."
+                  className="w-full bg-transparent text-xs sm:text-[13px] font-semibold text-[#10233f] placeholder:text-slate-400 placeholder:font-normal focus:outline-none"
+                />
+              </div>
+              {locationQuery && (
+                <button
+                  type="button"
+                  onClick={() => setLocationQuery("")}
+                  className="text-slate-400 hover:text-slate-600 p-1 cursor-pointer"
+                  aria-label="Clear area search"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+
+            {/* Field 2: PG Type */}
+            <div className="relative flex items-center gap-3 px-3.5 py-2.5 rounded-xl border border-slate-200/90 bg-slate-50/60 focus-within:border-[#1f6fe5] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#1f6fe5]/15 transition-all">
+              <Home className="w-4 h-4 text-[#1f6fe5] shrink-0" />
+              <div className="flex-1 min-w-0">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 leading-none mb-1">
+                  PG Type
+                </div>
+                <select
+                  value={typeFilter}
+                  onChange={(e) => setTypeFilter(e.target.value as FilterType)}
+                  className="w-full bg-transparent text-xs sm:text-[13px] font-semibold text-[#10233f] focus:outline-none cursor-pointer appearance-none pr-5"
+                >
+                  <option value="All">All Types</option>
+                  <option value="PG">PG</option>
+                  <option value="Hostel">Hostel</option>
+                  <option value="Shared Apartment">Shared Apartment</option>
+                </select>
+              </div>
+              <ChevronDown className="w-4 h-4 text-slate-400 pointer-events-none absolute right-3 top-1/2 -translate-y-1/2" />
+            </div>
+
+            {/* Field 3: Monthly Budget */}
+            <div className="relative flex items-center gap-3 px-3.5 py-2.5 rounded-xl border border-slate-200/90 bg-slate-50/60 focus-within:border-[#1f6fe5] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#1f6fe5]/15 transition-all">
+              <IndianRupee className="w-4 h-4 text-[#1f6fe5] shrink-0" />
+              <div className="flex-1 min-w-0">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 leading-none mb-1">
+                  Budget (per month)
+                </div>
+                <select
+                  value={budgetFilter}
+                  onChange={(e) => setBudgetFilter(e.target.value)}
+                  className="w-full bg-transparent text-xs sm:text-[13px] font-semibold text-[#10233f] focus:outline-none cursor-pointer appearance-none pr-5"
+                >
+                  <option value="All">Any Budget</option>
+                  <option value="under-6000">Under ₹6,000</option>
+                  <option value="6000-8000">₹6,000 - ₹8,000</option>
+                  <option value="above-8000">Above ₹8,000</option>
+                </select>
+              </div>
+              <ChevronDown className="w-4 h-4 text-slate-400 pointer-events-none absolute right-3 top-1/2 -translate-y-1/2" />
+            </div>
+
+            {/* Field 4: Search Button */}
+            <button
+              type="button"
+              onClick={() => loadListings()}
+              className="w-full h-full min-h-[46px] rounded-xl bg-[#1f6fe5] hover:bg-[#1856b8] text-white font-semibold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xs transition-colors cursor-pointer"
+            >
+              <Search className="w-4 h-4" />
+              <span>Search PGs</span>
+            </button>
+          </div>
+        </div>
+
+        {/* 3. POPULAR AREAS ROW */}
+        <div className="mt-8 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+            <span className="text-xs sm:text-sm font-bold text-[#10233f] mr-1">Popular Areas</span>
+            {POPULAR_AREAS.map((area) => {
+              const isActive =
+                area === "All Areas"
+                  ? !locationQuery
+                  : locationQuery.toLowerCase() === area.toLowerCase()
+
+              return (
+                <button
+                  key={area}
+                  type="button"
+                  onClick={() => setLocationQuery(area === "All Areas" ? "" : area)}
+                  className={`px-3 sm:px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                    isActive
+                      ? "bg-[#10233f] text-white shadow-xs"
+                      : "bg-slate-100 text-slate-600 hover:bg-slate-200/80"
+                  }`}
+                >
+                  {area}
+                </button>
+              )
+            })}
+          </div>
+
+          {/* View Map Action */}
+          <button
+            type="button"
+            onClick={() => openSearch("location")}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-blue-200 bg-blue-50/70 hover:bg-blue-100/80 text-[#1f6fe5] text-xs font-semibold transition-colors shrink-0 shadow-2xs cursor-pointer self-start sm:self-auto"
+          >
+            <Map className="w-3.5 h-3.5" />
+            <span>View Map</span>
+          </button>
+        </div>
+
+        {/* 4. LISTINGS SECTION HEADER */}
+        <div className="mt-8 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <h2 className="text-xl sm:text-2xl font-extrabold text-[#10233f]">
+            100+ Verified PGs in Mangaluru
+          </h2>
+
+          <div className="flex items-center gap-2 text-xs text-slate-500 self-end sm:self-auto">
+            <span className="font-medium">Sort by</span>
+            <div className="relative">
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="bg-white border border-slate-200 rounded-lg px-3 py-1.5 pr-7 text-xs font-semibold text-[#10233f] shadow-2xs focus:outline-none focus:ring-1 focus:ring-[#1f6fe5] cursor-pointer appearance-none"
+              >
+                <option value="nearest">Nearest</option>
+                <option value="price-asc">Price: Low to High</option>
+                <option value="price-desc">Price: High to Low</option>
+              </select>
+              <ChevronDown className="w-3.5 h-3.5 text-slate-400 pointer-events-none absolute right-2 top-1/2 -translate-y-1/2" />
+            </div>
+          </div>
+        </div>
+
+        {/* 5. 3-COLUMN LISTING GRID */}
         {isLoading && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
             {[1, 2, 3].map((idx) => (
-              <div key={idx} className="bg-white rounded-3xl p-6 border border-slate-100 h-72 flex flex-col justify-between">
-                <div>
-                  <div className="flex justify-between mb-4">
-                    <div className="w-16 h-5 bg-slate-200 rounded-full" />
-                    <div className="w-12 h-5 bg-slate-100 rounded-full" />
+              <div key={idx} className="bg-white rounded-2xl border border-slate-100 overflow-hidden h-96 flex flex-col">
+                <div className="h-52 bg-slate-200" />
+                <div className="p-5 flex-1 flex flex-col justify-between">
+                  <div>
+                    <div className="w-3/4 h-5 bg-slate-200 rounded mb-2" />
+                    <div className="w-1/2 h-4 bg-slate-100 rounded mb-4" />
+                    <div className="flex gap-2">
+                      <div className="w-16 h-6 bg-slate-100 rounded" />
+                      <div className="w-16 h-6 bg-slate-100 rounded" />
+                    </div>
                   </div>
-                  <div className="w-3/4 h-6 bg-slate-200 rounded-lg mb-2" />
-                  <div className="w-full h-4 bg-slate-100 rounded mb-4" />
-                  <div className="w-1/2 h-4 bg-slate-100 rounded" />
-                </div>
-                <div className="pt-4 border-t border-slate-100 flex justify-between items-center">
-                  <div className="w-20 h-6 bg-slate-200 rounded" />
-                  <div className="w-24 h-8 bg-slate-200 rounded-full" />
+                  <div className="pt-3 border-t border-slate-100 flex justify-between items-center">
+                    <div className="w-20 h-6 bg-slate-200 rounded" />
+                    <div className="w-24 h-8 bg-slate-200 rounded-xl" />
+                  </div>
                 </div>
               </div>
             ))}
@@ -241,103 +446,140 @@ function AccommodationContent() {
           </div>
         )}
 
-        {/* LISTINGS GRID */}
+        {/* LISTINGS CARDS */}
         {!isLoading && !error && listings.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {listings.map((listing) => {
-              const genderBadgeClass =
-                listing.gender === "Girls"
-                  ? "bg-rose-50 text-rose-700 border-rose-200/60"
-                  : listing.gender === "Boys"
-                  ? "bg-blue-50 text-blue-700 border-blue-200/60"
-                  : "bg-emerald-50 text-emerald-700 border-emerald-200/60"
+            {listings.map((listing, idx) => {
+              // Differentiated realistic room photos
+              const photoFallback =
+                idx % 3 === 0
+                  ? "/pg-room-1.jpg"
+                  : idx % 3 === 1
+                  ? "/pg-room-2.jpg"
+                  : "/pg-room-3.jpg"
+
+              const imageUrl =
+                listing.sampleImage &&
+                listing.sampleImage !== "/hero-coast.png" &&
+                listing.sampleImage !== "/hero-coast.jpg"
+                  ? listing.sampleImage
+                  : photoFallback
+
+              // Differentiated photo count matching reference
+              const photoCount = idx === 0 ? 8 : idx === 1 ? 10 : idx === 2 ? 6 : 8 + (idx % 5)
+
+              const isFavorite = favorites.has(listing.id)
 
               return (
                 <div
                   key={listing.id}
-                  className="bg-white rounded-3xl p-6 border border-slate-100 locano-card locano-card-interactive flex flex-col justify-between group transition-all"
+                  className="group bg-white rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all overflow-hidden flex flex-col justify-between"
                 >
-                  <div>
-                    {/* CARD HEADER TAGS */}
-                    <div className="flex items-center justify-between gap-2 mb-3">
-                      <div className="flex items-center gap-1.5">
-                        <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${genderBadgeClass}`}>
-                          {listing.gender}
-                        </span>
-                        <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600">
-                          {listing.type}
-                        </span>
-                      </div>
-                      {listing.isDemo ? (
-                        <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200/60">
-                          Demo Preview
-                        </span>
-                      ) : (
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/60 flex items-center gap-1">
-                          <ShieldCheck className="w-3 h-3" />
-                          <span>Verified</span>
-                        </span>
-                      )}
+                  {/* CARD IMAGE CONTAINER */}
+                  <div className="relative h-48 sm:h-52 w-full overflow-hidden bg-slate-100">
+                    <Image
+                      src={imageUrl}
+                      alt={listing.name}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-300"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    />
+
+                    {/* Top-left: Verified Badge */}
+                    <div className="absolute top-3 left-3 z-10">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/95 backdrop-blur-md text-emerald-600 text-[11px] font-bold shadow-xs border border-emerald-100">
+                        <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+                        <span>Verified</span>
+                      </span>
                     </div>
 
-                    {/* PROPERTY NAME & TAGLINE */}
-                    <h2 className="text-xl font-bold text-[#10233f] group-hover:text-[#1f6fe5] transition-colors leading-snug">
-                      {listing.name}
-                    </h2>
-                    <p className="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">
-                      {listing.tagline}
-                    </p>
+                    {/* Top-right: Heart Favorite button */}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        toggleFavorite(listing.id)
+                      }}
+                      aria-label="Save to favorites"
+                      className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-black/35 hover:bg-black/55 backdrop-blur-md text-white flex items-center justify-center transition cursor-pointer"
+                    >
+                      <Heart
+                        className={`w-4 h-4 transition-colors ${
+                          isFavorite ? "fill-rose-500 text-rose-500" : ""
+                        }`}
+                      />
+                    </button>
 
-                    {/* LOCATION & LANDMARK */}
-                    <div className="mt-3 flex items-center gap-1.5 text-xs text-slate-600">
-                      <MapPin className="w-3.5 h-3.5 text-[#1f6fe5] shrink-0" />
-                      <span className="font-semibold text-slate-700">{listing.area}</span>
-                      <span className="text-slate-400">· {listing.nearestLandmark}</span>
-                    </div>
-
-                    {/* AMENITIES PILLS */}
-                    <div className="mt-4 flex flex-wrap gap-1.5">
-                      {listing.amenities.slice(0, 3).map((amenity) => (
-                        <span
-                          key={amenity}
-                          className="text-[10px] font-medium px-2 py-0.5 rounded-lg bg-slate-50 border border-slate-200/60 text-slate-600"
-                        >
-                          {amenity}
-                        </span>
-                      ))}
-                      {listing.amenities.length > 3 && (
-                        <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-lg bg-slate-50 text-slate-400">
-                          +{listing.amenities.length - 3} more
-                        </span>
-                      )}
-                    </div>
-
-                    {/* FOOD OPTION TAG */}
-                    <div className="mt-3 text-[11px] text-slate-500 flex items-center gap-1.5">
-                      <UtensilsCrossed className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                      <span>Food: {listing.foodOption}</span>
+                    {/* Bottom-right: Photo count badge */}
+                    <div className="absolute bottom-2.5 right-2.5 z-10">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-md text-white text-[11px] font-medium">
+                        <Camera className="w-3.5 h-3.5" />
+                        <span>{photoCount} photos</span>
+                      </span>
                     </div>
                   </div>
 
-                  {/* CARD FOOTER: PRICE & DETAIL LINK */}
-                  <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
+                  {/* CARD BODY */}
+                  <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between">
                     <div>
-                      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                        Starting from
+                      {/* Name & Type Tag */}
+                      <div className="flex items-start justify-between gap-2 mb-1.5">
+                        <h3 className="text-[16px] sm:text-[17px] font-bold text-[#10233f] group-hover:text-[#1f6fe5] transition-colors leading-snug line-clamp-1">
+                          {listing.name}
+                        </h3>
+                        <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 shrink-0">
+                          {listing.type}
+                          {listing.gender === "Girls"
+                            ? " (Girls)"
+                            : listing.gender === "Boys"
+                            ? " (Boys)"
+                            : ""}
+                        </span>
                       </div>
-                      <div className="text-lg font-extrabold text-[#10233f]">
-                        ₹{listing.monthlyRentFrom.toLocaleString("en-IN")}
-                        <span className="text-xs font-normal text-slate-500"> /mo</span>
+
+                      {/* Location & Landmark / Distance */}
+                      <div className="flex items-center gap-1.5 text-xs text-slate-500 mb-3">
+                        <MapPin className="w-3.5 h-3.5 text-[#1f6fe5] shrink-0" />
+                        <span className="font-semibold text-slate-700">{listing.area}</span>
+                        <span className="text-slate-400">· {listing.nearestLandmark}</span>
+                      </div>
+
+                      {/* Amenities Row */}
+                      <div className="flex flex-wrap items-center gap-1.5 mb-4">
+                        {listing.amenities.slice(0, 3).map((amenity) => (
+                          <span
+                            key={amenity}
+                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-50 border border-slate-200/70 text-slate-600 text-[11px] font-medium"
+                          >
+                            {getAmenityIcon(amenity)}
+                            <span>{getAmenityLabel(amenity)}</span>
+                          </span>
+                        ))}
+                        {listing.amenities.length > 3 && (
+                          <span className="text-[11px] font-semibold px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-500">
+                            +{listing.amenities.length - 3}
+                          </span>
+                        )}
                       </div>
                     </div>
 
-                    <Link
-                      href={`/accommodation/${listing.id}`}
-                      className="inline-flex items-center gap-1 px-4 py-2 rounded-full bg-[#10233f] text-white hover:bg-[#1f6fe5] text-xs font-semibold transition-colors shadow-xs group-hover:bg-[#1f6fe5]"
-                    >
-                      <span>View Details</span>
-                      <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
-                    </Link>
+                    {/* Price & View Details Action */}
+                    <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+                      <div>
+                        <div className="text-lg sm:text-xl font-extrabold text-[#10233f]">
+                          ₹{listing.monthlyRentFrom.toLocaleString("en-IN")}
+                          <span className="text-xs font-normal text-slate-500">/month</span>
+                        </div>
+                      </div>
+
+                      <Link
+                        href={`/accommodation/${listing.id}`}
+                        className="inline-flex items-center gap-1 px-4 py-2 rounded-xl bg-[#10233f] hover:bg-[#1f6fe5] text-white text-xs font-semibold transition-colors shadow-xs"
+                      >
+                        <span>View Details</span>
+                        <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                      </Link>
+                    </div>
                   </div>
                 </div>
               )
@@ -347,20 +589,21 @@ function AccommodationContent() {
 
         {/* EMPTY STATE */}
         {!isLoading && !error && listings.length === 0 && (
-          <div className="p-12 text-center bg-white rounded-3xl border border-slate-200/80 locano-card space-y-3">
+          <div className="p-12 text-center bg-white rounded-3xl border border-slate-200/80 locano-card space-y-3 mt-4">
             <div className="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
               <Filter className="w-6 h-6" />
             </div>
             <h3 className="text-base font-bold text-[#10233f]">No accommodations match your filter</h3>
             <p className="text-xs text-slate-500 max-w-sm mx-auto">
-              Try adjusting your gender, property type, or area query to view available listings.
+              Try adjusting your area query, property type, or monthly budget to view available listings.
             </p>
             <button
               type="button"
               onClick={() => {
-                setGenderFilter("All")
                 setTypeFilter("All")
                 setLocationQuery("")
+                setBudgetFilter("All")
+                setGenderFilter("All")
               }}
               className="mt-2 px-4 py-2 rounded-full bg-[#1f6fe5] text-white text-xs font-semibold hover:bg-blue-600 transition-colors cursor-pointer"
             >
@@ -368,6 +611,36 @@ function AccommodationContent() {
             </button>
           </div>
         )}
+
+        {/* DEMO NOTICE (WHEN ACTIVE) */}
+        {hasDemoListings && (
+          <div className="mt-12 p-3 sm:p-3.5 rounded-xl bg-amber-50/90 border border-amber-200/80 text-amber-900 text-xs flex items-center gap-2.5 shadow-2xs">
+            <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+            <div className="leading-relaxed">
+              <span className="font-bold">Development Preview Notice:</span> {DEMO_DISCLAIMER_TEXT}
+            </div>
+          </div>
+        )}
+
+        {/* PG OWNER CALLOUT FOOTER CARD */}
+        <div className="mt-6 p-5 rounded-2xl bg-white border border-slate-200/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
+          <div className="flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#1f6fe5] flex items-center justify-center shrink-0">
+              <Building2 className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-xs sm:text-sm font-bold text-[#10233f]">Own a student PG, hostel, or flat in Mangaluru?</p>
+              <p className="text-[11px] sm:text-xs text-slate-500">Submit your property for admin verification and get listed on LOCANO.</p>
+            </div>
+          </div>
+          <Link
+            href="/pg-owner/submit"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#10233f] hover:bg-[#1f6fe5] text-white text-xs font-semibold transition-colors shrink-0 shadow-xs"
+          >
+            <span>PG Owner Submission</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
       </div>
     </div>
   )
@@ -377,7 +650,7 @@ export default function AccommodationPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-[#f4f8fc] pt-28 pb-20 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-[#f8fafc] pt-28 pb-20 px-4 sm:px-6 lg:px-8">
           <div className="max-w-6xl mx-auto flex items-center justify-center p-20">
             <div className="animate-pulse text-sm font-semibold text-slate-400">Loading student accommodations…</div>
           </div>

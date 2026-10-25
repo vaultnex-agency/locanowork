@@ -144,7 +144,7 @@ export function HomeHero() {
   return (
     <section
       id="hero"
-      className="relative min-h-[calc(100vh-20px)] lg:min-h-screen flex flex-col justify-between pt-24 sm:pt-28 pb-4 sm:pb-6 px-4 sm:px-6 lg:px-8 overflow-hidden"
+      className="relative min-h-[calc(100vh-20px)] lg:min-h-screen flex flex-col justify-between pt-20 sm:pt-24 lg:pt-24 pb-3 sm:pb-5 px-4 sm:px-6 lg:px-8 overflow-hidden"
       style={{
         backgroundImage: "url('/hero-coast.jpg')",
         backgroundSize: "cover",
@@ -169,9 +169,9 @@ export function HomeHero() {
       />
 
       {/* TOP & MIDDLE HERO CONTENT */}
-      <div className="relative z-10 max-w-7xl mx-auto w-full flex-1 flex flex-col justify-center py-4">
+      <div className="relative z-30 max-w-7xl mx-auto w-full flex-1 flex flex-col justify-center py-2 sm:py-3">
         {/* Location Badge: 📍 MANGALURU | Your City. Our Guide. */}
-        <div className="mb-4 sm:mb-5">
+        <div className="mb-3 sm:mb-4">
           <span className="inline-flex items-center gap-1.5 text-xs sm:text-[13px] font-semibold text-[#1f6fe5] tracking-wide">
             <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#1f6fe5]" />
             <span className="font-bold tracking-wider">MANGALURU</span>
@@ -181,7 +181,7 @@ export function HomeHero() {
         </div>
 
         {/* Headline */}
-        <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[54px] xl:text-[58px] font-extrabold leading-[1.12] tracking-tight text-[#10233f] max-w-2xl mb-4 sm:mb-5">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[52px] xl:text-[56px] font-extrabold leading-[1.12] tracking-tight text-[#10233f] max-w-2xl mb-3 sm:mb-4">
           Your Student Life{" "}
           <br />
           in Mangaluru,{" "}
@@ -190,13 +190,13 @@ export function HomeHero() {
         </h1>
 
         {/* Subtitle */}
-        <p className="text-sm sm:text-base lg:text-[17px] text-[#4e637f] max-w-xl leading-relaxed mb-6 sm:mb-7 font-normal">
+        <p className="text-sm sm:text-base lg:text-[16.5px] text-[#4e637f] max-w-xl leading-relaxed mb-5 sm:mb-6 font-normal">
           Find accommodation, food, transport, and essential services —
           everything you need to settle, commute, and live comfortably.
         </p>
 
-        {/* Interactive Search Bar matching hero.jpeg */}
-        <div ref={containerRef} className="relative max-w-2xl w-full mb-6 sm:mb-8 z-30">
+        {/* Interactive Search Bar centered horizontally */}
+        <div ref={containerRef} className="relative max-w-2xl lg:max-w-3xl w-full mx-auto mb-3.5 sm:mb-4 z-30">
           <form
             onSubmit={handleSearchSubmit}
             className="group relative flex items-center w-full bg-white/95 backdrop-blur-md rounded-full border border-slate-200/90 shadow-lg shadow-slate-900/[0.06] hover:border-slate-300 focus-within:border-[#1f6fe5] focus-within:ring-2 focus-within:ring-[#1f6fe5]/20 transition-all px-4 sm:px-5 py-2 sm:py-2.5"
@@ -231,7 +231,7 @@ export function HomeHero() {
               </button>
             )}
 
-            {/* Submit button matching hero.jpeg */}
+            {/* Submit button matching reference */}
             <button
               type="submit"
               className="ml-2 shrink-0 inline-flex items-center gap-1.5 bg-[#1f6fe5] text-white text-xs sm:text-sm font-semibold px-4 sm:px-5 py-2 sm:py-2.5 rounded-full hover:bg-[#1856b8] transition-colors shadow-xs cursor-pointer"
@@ -243,7 +243,7 @@ export function HomeHero() {
 
           {/* Autocomplete / Live Suggestions Dropdown */}
           {isOpen && suggestions.length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-white/95 backdrop-blur-xl rounded-2xl border border-slate-200/80 shadow-2xl p-2 sm:p-2.5 space-y-1 animate-entrance z-50">
+            <div className="absolute top-full left-0 right-0 mt-2 bg-white/95 backdrop-blur-xl rounded-2xl border border-slate-200/80 shadow-2xl p-2 sm:p-2.5 space-y-1 animate-entrance z-50 max-h-[70vh] sm:max-h-[420px] overflow-y-auto">
               <div className="px-3 py-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                 Matching Suggestions
               </div>
@@ -292,8 +292,8 @@ export function HomeHero() {
           )}
         </div>
 
-        {/* Four Service Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-3.5 max-w-5xl w-full">
+        {/* Four Service Cards centered horizontally */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-3.5 max-w-5xl w-full mx-auto">
           {services.map((s) => {
             const Icon = s.icon
             return (
@@ -322,16 +322,16 @@ export function HomeHero() {
         </div>
       </div>
 
-      {/* BOTTOM STATISTICS STRIP – Frosted Glass Capsule */}
-      <div className="relative z-10 max-w-5xl mx-auto w-full mt-4 sm:mt-6">
-        <div className="bg-white/85 backdrop-blur-md rounded-2xl sm:rounded-full border border-white/80 shadow-lg shadow-slate-900/[0.04] px-4 sm:px-6 py-3 sm:py-3.5">
+      {/* BOTTOM STATISTICS STRIP – Centered matching reference width and spacing */}
+      <div className="relative z-10 max-w-6xl xl:max-w-7xl mx-auto w-full mt-3 sm:mt-5 mb-1 sm:mb-2">
+        <div className="bg-white/85 backdrop-blur-md rounded-2xl sm:rounded-full border border-white/80 shadow-lg shadow-slate-900/[0.04] px-4 sm:px-8 py-3 sm:py-3.5">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-0 lg:divide-x lg:divide-slate-200/70">
             {stats.map((item, idx) => {
               const Icon = item.icon
               return (
                 <div
                   key={idx}
-                  className="flex items-center gap-3 lg:px-4 first:pl-0 last:pr-0"
+                  className="flex items-center justify-start sm:justify-center gap-3 sm:gap-3.5 lg:px-4"
                 >
                   <div
                     className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full ${item.iconBg} ${item.iconColor} flex items-center justify-center shrink-0`}

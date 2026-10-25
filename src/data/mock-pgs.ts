@@ -34,7 +34,7 @@ export const mockAccommodations: AccommodationListing[] = [
     noticePeriodDays: 30,
     description:
       "A fictional student PG designed to showcase LOCANO's layout. Features ventilated rooms, high-speed Wi-Fi, home-style South Indian food, and proximity to city transit stops.",
-    sampleImage: "/hero-coast.png",
+    sampleImage: "/pg-room-1.jpg",
     isDemo: true,
   },
   {
@@ -67,7 +67,7 @@ export const mockAccommodations: AccommodationListing[] = [
     noticePeriodDays: 30,
     description:
       "A sample girls' PG listing in the Balmatta area. Demonstrates clean interface presentation for student accommodations with security highlights and transparent pricing.",
-    sampleImage: "/hero-coast.png",
+    sampleImage: "/pg-room-2.jpg",
     isDemo: true,
   },
   {
@@ -100,7 +100,7 @@ export const mockAccommodations: AccommodationListing[] = [
     noticePeriodDays: 30,
     description:
       "Fictional accommodation positioned near educational institutions in Deralakatte. Illustrates multi-sharing price tiers and flexible food plan options.",
-    sampleImage: "/hero-coast.png",
+    sampleImage: "/pg-room-3.jpg",
     isDemo: true,
   },
   {
@@ -132,7 +132,7 @@ export const mockAccommodations: AccommodationListing[] = [
     noticePeriodDays: 15,
     description:
       "Centrally placed demo property demonstrating quick transit accessibility. Ideal for previewing how short transit walks connect to student residences.",
-    sampleImage: "/hero-coast.png",
+    sampleImage: "/pg-room-1.jpg",
     isDemo: true,
   },
   {
@@ -164,7 +164,7 @@ export const mockAccommodations: AccommodationListing[] = [
     noticePeriodDays: 45,
     description:
       "A sample self-cooking shared apartment listing in Surathkal. Shows how student flats with shared utilities can be organized on LOCANO.",
-    sampleImage: "/hero-coast.png",
+    sampleImage: "/pg-room-3.jpg",
     isDemo: true,
   },
   {
@@ -197,7 +197,7 @@ export const mockAccommodations: AccommodationListing[] = [
     noticePeriodDays: 30,
     description:
       "A premium fictional girls' residence showcasing comprehensive amenity tags, inclusive meals, and full-featured property details.",
-    sampleImage: "/hero-coast.png",
+    sampleImage: "/pg-room-2.jpg",
     isDemo: true,
   },
 ]
