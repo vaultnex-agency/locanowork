@@ -10,7 +10,6 @@ import {
   type SearchSuggestion,
 } from "@/lib/search/query-parser"
 import {
-  MapPin,
   Search,
   ArrowRight,
   Home,
@@ -18,9 +17,9 @@ import {
   Bus,
   Siren,
   ChevronRight,
-  Users,
-  Landmark,
-  ShieldCheck,
+  Star,
+  MapPin,
+  Check,
   X,
 } from "lucide-react"
 
@@ -33,73 +32,60 @@ const services = [
     subtitle: "PGs, Hostels & Flats",
     href: "/accommodation",
     icon: Home,
-    iconBg: "bg-blue-50",
-    iconColor: "text-[#1f6fe5]",
+    iconBg: "bg-blue-50 text-[#1f6fe5] border-blue-100",
   },
   {
     title: "Food & Mess",
     subtitle: "Mess, Hotels & Cafes",
     href: "/mess",
     icon: Utensils,
-    iconBg: "bg-orange-50",
-    iconColor: "text-[#ea580c]",
+    iconBg: "bg-orange-50 text-[#ea580c] border-orange-100",
   },
   {
     title: "Transport",
     subtitle: "Routes, Timings & Stops",
     href: "/transport",
     icon: Bus,
-    iconBg: "bg-purple-50",
-    iconColor: "text-[#7c3aed]",
+    iconBg: "bg-purple-50 text-[#7c3aed] border-purple-100",
   },
   {
     title: "Essential Services",
     subtitle: "Nearby Help & Services",
     href: "/emergency",
     icon: Siren,
-    iconBg: "bg-rose-50",
-    iconColor: "text-[#e11d48]",
+    iconBg: "bg-rose-50 text-[#e11d48] border-rose-100",
   },
 ] as const
 
-/* ------------------------------------------------------------------ */
-/*  Bottom info strip – matching visual structure of hero.jpeg         */
-/*  Note: Unverified numeric claims (100K+, 200+) are omitted per     */
-/*  strict instruction; verified platform descriptors are used.       */
-/* ------------------------------------------------------------------ */
-const stats = [
+const badges = [
   {
-    icon: Users,
-    title: "Students",
-    subtitle: "Students in Mangaluru",
-    iconBg: "bg-blue-100/80",
-    iconColor: "text-[#1f6fe5]",
+    label: "100+ Verified PGs",
+    icon: (
+      <div className="w-4 h-4 rounded bg-[#10b981] flex items-center justify-center text-white shrink-0 shadow-xs">
+        <Check className="w-2.5 h-2.5 stroke-[3.5]" />
+      </div>
+    ),
   },
   {
-    icon: Landmark,
-    title: "Colleges",
-    subtitle: "Colleges & Institutions",
-    iconBg: "bg-sky-100/80",
-    iconColor: "text-[#0284c7]",
+    label: "Zero Brokerage",
+    icon: <Star className="w-4 h-4 text-[#fbbf24] fill-[#fbbf24] shrink-0" />,
   },
   {
-    icon: MapPin,
-    title: "City-wide",
-    subtitle: "Coverage Area",
-    iconBg: "bg-purple-100/80",
-    iconColor: "text-[#7c3aed]",
+    label: "Settling is Simple",
+    icon: <MapPin className="w-4 h-4 text-[#38bdf8] fill-[#38bdf8] shrink-0" />,
   },
   {
-    icon: ShieldCheck,
-    title: "Verified",
-    subtitle: "Student Friendly Information",
-    iconBg: "bg-emerald-100/80",
-    iconColor: "text-[#059669]",
+    label: "Safe & Secure",
+    icon: (
+      <div className="w-4 h-4 rounded-full bg-[#0284c7] flex items-center justify-center text-white shrink-0 shadow-xs">
+        <Check className="w-2.5 h-2.5 stroke-[3.5]" />
+      </div>
+    ),
   },
 ] as const
 
 /* ================================================================== */
-/*  HomeHero – Pixel-accurate to reference hero.jpeg                  */
+/*  HomeHero – Exactly matching the reference image                   */
 /* ================================================================== */
 export function HomeHero() {
   const router = useRouter()
@@ -144,64 +130,64 @@ export function HomeHero() {
   return (
     <section
       id="hero"
-      className="relative min-h-[calc(100vh-20px)] lg:min-h-screen flex flex-col justify-between pt-20 sm:pt-24 lg:pt-24 pb-3 sm:pb-5 px-4 sm:px-6 lg:px-8 overflow-hidden"
+      className="relative min-h-[92vh] lg:min-h-screen flex flex-col justify-center pt-28 sm:pt-36 lg:pt-40 pb-16 sm:pb-24 px-4 sm:px-6 lg:px-8 overflow-hidden bg-slate-900"
       style={{
-        backgroundImage: "url('/hero-coast.jpg')",
+        backgroundImage: "url('/hero-sunset.jpg')",
         backgroundSize: "cover",
-        backgroundPosition: "center right",
+        backgroundPosition: "center center",
       }}
     >
-      {/* Coastal Mangaluru sunny gradient overlay: opaque on left for readability, clear on right */}
+      {/* Cinematic dark sunset gradient overlay for crystal clear contrast */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            "linear-gradient(90deg, rgba(255,255,255,0.96) 0%, rgba(255,255,255,0.90) 36%, rgba(255,255,255,0.52) 58%, rgba(255,255,255,0.12) 78%, transparent 100%)",
+            "linear-gradient(180deg, rgba(10, 20, 45, 0.40) 0%, rgba(10, 20, 45, 0.22) 35%, rgba(10, 20, 45, 0.38) 100%)",
         }}
       />
-      {/* Warm sunlight glow from top-left */}
+
+      {/* Warm ambient center glow */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            "radial-gradient(circle at 12% 18%, rgba(255, 237, 213, 0.45) 0%, transparent 45%)",
+            "radial-gradient(circle at 50% 38%, rgba(255, 180, 80, 0.12) 0%, transparent 60%)",
         }}
       />
 
-      {/* TOP & MIDDLE HERO CONTENT */}
-      <div className="relative z-30 max-w-7xl mx-auto w-full flex-1 flex flex-col justify-center py-2 sm:py-3">
-        {/* Location Badge: 📍 MANGALURU | Your City. Our Guide. */}
-        <div className="mb-3 sm:mb-4">
-          <span className="inline-flex items-center gap-1.5 text-xs sm:text-[13px] font-semibold text-[#1f6fe5] tracking-wide">
-            <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#1f6fe5]" />
-            <span className="font-bold tracking-wider">MANGALURU</span>
-            <span className="text-slate-300 mx-1">|</span>
-            <span className="font-medium text-slate-600">Your City. Our Guide.</span>
-          </span>
-        </div>
-
-        {/* Headline */}
-        <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[52px] xl:text-[56px] font-extrabold leading-[1.12] tracking-tight text-[#10233f] max-w-2xl mb-3 sm:mb-4">
-          Your Student Life{" "}
-          <br />
-          in Mangaluru,{" "}
-          <br />
-          <span className="text-[#1f6fe5]">Simplified.</span>
+      {/* MAIN HERO CONTENT */}
+      <div className="relative z-30 max-w-5xl mx-auto w-full flex flex-col items-center justify-center text-center">
+        {/* Main Headline */}
+        <h1 className="text-4xl sm:text-6xl md:text-[68px] lg:text-[76px] font-black tracking-tight leading-[1.06] drop-shadow-md mb-3.5 sm:mb-4">
+          <span className="text-white block drop-shadow-lg">Settling</span>
+          <span className="text-[#56caf8] block mt-1 sm:mt-1.5 drop-shadow-lg">Made Simple.</span>
         </h1>
 
         {/* Subtitle */}
-        <p className="text-sm sm:text-base lg:text-[16.5px] text-[#4e637f] max-w-xl leading-relaxed mb-5 sm:mb-6 font-normal">
-          Find accommodation, food, transport, and essential services —
-          everything you need to settle, commute, and live comfortably.
+        <p className="text-white/95 text-xs sm:text-base md:text-[17px] font-medium max-w-xl sm:max-w-2xl mx-auto leading-relaxed drop-shadow-md mb-4 sm:mb-5 px-2">
+          Discover verified student PGs in Mangalore with real-time availability, zero brokerage, and direct landlord booking.
         </p>
 
-        {/* Interactive Search Bar centered horizontally */}
-        <div ref={containerRef} className="relative max-w-2xl lg:max-w-3xl w-full mx-auto mb-3.5 sm:mb-4 z-30">
+        {/* Badges / Pill Tags */}
+        <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 mb-7 sm:mb-8 text-xs sm:text-[13.5px] font-medium text-white px-2">
+          {badges.map((badge, idx) => (
+            <div
+              key={idx}
+              className="inline-flex items-center gap-1.5 drop-shadow-md"
+            >
+              {badge.icon}
+              <span className="text-white drop-shadow-sm">{badge.label}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Universal Search Bar */}
+        <div ref={containerRef} className="relative max-w-3xl w-full mx-auto mb-5 sm:mb-6 z-30">
           <form
             onSubmit={handleSearchSubmit}
-            className="group relative flex items-center w-full bg-white/95 backdrop-blur-md rounded-full border border-slate-200/90 shadow-lg shadow-slate-900/[0.06] hover:border-slate-300 focus-within:border-[#1f6fe5] focus-within:ring-2 focus-within:ring-[#1f6fe5]/20 transition-all px-4 sm:px-5 py-2 sm:py-2.5"
+            className="group relative flex items-center w-full bg-white/95 backdrop-blur-md rounded-full shadow-2xl hover:shadow-3xl border border-white/80 p-1.5 sm:p-2 pl-4 sm:pl-6 transition-all"
           >
-            <Search className="w-4 h-4 sm:w-5 sm:h-5 text-slate-400 mr-2.5 shrink-0" />
+            <Search className="w-4 h-4 sm:w-5 sm:h-5 text-slate-400 mr-2.5 sm:mr-3 shrink-0" />
             <input
               type="text"
               value={query}
@@ -210,8 +196,8 @@ export function HomeHero() {
                 setIsOpen(true)
               }}
               onFocus={() => setIsOpen(true)}
-              placeholder="Search bus number, area, PG, mess, or service…"
-              className="flex-1 bg-transparent text-xs sm:text-[14.5px] text-[#10233f] placeholder:text-slate-400 focus:outline-none min-w-0"
+              placeholder="Search bus number, area, PG, mess, or service..."
+              className="flex-1 bg-transparent text-xs sm:text-[15px] font-normal text-slate-800 placeholder:text-slate-400 focus:outline-none min-w-0"
               autoComplete="off"
               aria-label="Universal search"
             />
@@ -231,19 +217,19 @@ export function HomeHero() {
               </button>
             )}
 
-            {/* Submit button matching reference */}
+            {/* Blue Pill Submit Button */}
             <button
               type="submit"
-              className="ml-2 shrink-0 inline-flex items-center gap-1.5 bg-[#1f6fe5] text-white text-xs sm:text-sm font-semibold px-4 sm:px-5 py-2 sm:py-2.5 rounded-full hover:bg-[#1856b8] transition-colors shadow-xs cursor-pointer"
+              className="ml-2 shrink-0 inline-flex items-center gap-1.5 sm:gap-2 bg-[#1f6fe5] hover:bg-[#1856b8] text-white text-xs sm:text-sm font-semibold px-4 sm:px-7 py-2 sm:py-2.5 rounded-full transition-all shadow-md hover:shadow-lg cursor-pointer"
             >
               <span>Search</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+              <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
           </form>
 
           {/* Autocomplete / Live Suggestions Dropdown */}
           {isOpen && suggestions.length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-white/95 backdrop-blur-xl rounded-2xl border border-slate-200/80 shadow-2xl p-2 sm:p-2.5 space-y-1 animate-entrance z-50 max-h-[70vh] sm:max-h-[420px] overflow-y-auto">
+            <div className="absolute top-full left-0 right-0 mt-2 bg-white/95 backdrop-blur-xl rounded-2xl border border-slate-200/80 shadow-2xl p-2 sm:p-2.5 space-y-1 animate-entrance z-50 max-h-[70vh] sm:max-h-[420px] overflow-y-auto text-left">
               <div className="px-3 py-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                 Matching Suggestions
               </div>
@@ -292,66 +278,36 @@ export function HomeHero() {
           )}
         </div>
 
-        {/* Four Service Cards centered horizontally */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-3.5 max-w-5xl w-full mx-auto">
+        {/* Four Service Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 max-w-5xl w-full mx-auto">
           {services.map((s) => {
             const Icon = s.icon
             return (
               <Link
                 key={s.href}
                 href={s.href}
-                className="group flex items-center gap-3 bg-white/95 backdrop-blur-md rounded-2xl border border-white/80 shadow-md shadow-slate-900/[0.04] p-3 sm:p-3.5 hover:shadow-lg hover:-translate-y-0.5 hover:bg-white transition-all cursor-pointer"
+                className="group flex items-center gap-3 bg-white/95 backdrop-blur-md rounded-2xl border border-white/80 shadow-lg shadow-black/5 hover:shadow-2xl hover:-translate-y-0.5 hover:bg-white transition-all p-3 sm:p-3.5 text-left cursor-pointer"
               >
                 <div
-                  className={`w-10 h-10 rounded-xl ${s.iconBg} ${s.iconColor} flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform`}
+                  className={`w-10 h-10 rounded-full ${s.iconBg} border flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform`}
                 >
                   <Icon className="w-5 h-5" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-[13.5px] font-bold text-[#10233f] leading-snug group-hover:text-[#1f6fe5] transition-colors">
+                  <div className="text-[13.5px] font-bold text-slate-900 group-hover:text-[#1f6fe5] transition-colors leading-snug">
                     {s.title}
                   </div>
-                  <div className="text-[11px] text-slate-500 leading-snug mt-0.5">
+                  <div className="text-[11px] text-slate-500 leading-snug mt-0.5 truncate">
                     {s.subtitle}
                   </div>
                 </div>
-                <ChevronRight className="w-4 h-4 text-slate-300 shrink-0 group-hover:text-[#1f6fe5] group-hover:translate-x-0.5 transition-all" />
+                <ChevronRight className="w-4 h-4 text-slate-300 shrink-0 group-hover:text-[#1f6fe5] group-hover:translate-x-0.5 transition-all ml-1" />
               </Link>
             )
           })}
         </div>
       </div>
-
-      {/* BOTTOM STATISTICS STRIP – Centered matching reference width and spacing */}
-      <div className="relative z-10 max-w-6xl xl:max-w-7xl mx-auto w-full mt-3 sm:mt-5 mb-1 sm:mb-2">
-        <div className="bg-white/85 backdrop-blur-md rounded-2xl sm:rounded-full border border-white/80 shadow-lg shadow-slate-900/[0.04] px-4 sm:px-8 py-3 sm:py-3.5">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-0 lg:divide-x lg:divide-slate-200/70">
-            {stats.map((item, idx) => {
-              const Icon = item.icon
-              return (
-                <div
-                  key={idx}
-                  className="flex items-center justify-start sm:justify-center gap-3 sm:gap-3.5 lg:px-4"
-                >
-                  <div
-                    className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full ${item.iconBg} ${item.iconColor} flex items-center justify-center shrink-0`}
-                  >
-                    <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
-                  </div>
-                  <div className="min-w-0">
-                    <div className="text-sm sm:text-[15px] font-extrabold text-[#10233f] leading-tight">
-                      {item.title}
-                    </div>
-                    <div className="text-[10.5px] sm:text-[11.5px] text-slate-500 leading-tight mt-0.5 truncate">
-                      {item.subtitle}
-                    </div>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      </div>
     </section>
   )
 }
+
