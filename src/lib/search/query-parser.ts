@@ -379,12 +379,12 @@ export function parseSearchQuery(rawQuery: string): ParsedSearchResult {
 
   // 5. Default: If only an area was typed (e.g., "derlakatee", "balmatta")
   if (matchedArea) {
-    // Default to accommodation for this area, but suggestions will provide mess/transport
+    // Default to accommodation for this area, but suggestions will provide mess
     return {
       category: "all",
       targetUrl: `/accommodation?search=${encodeURIComponent(matchedArea)}`,
       normalizedLocation: matchedArea,
-      displayLabel: `Explore ${matchedArea} (PGs, Mess & Transport)`,
+      displayLabel: `Explore ${matchedArea} (PGs & Mess)`,
     }
   }
 
@@ -410,22 +410,16 @@ export function getLiveSearchSuggestions(query: string): SearchSuggestion[] {
   if (area) {
     return [
       {
-        title: `Messes & Food in ${area}`,
-        subtitle: `Find student thalis, monthly mess passes & dining in ${area}`,
-        category: "mess",
-        url: `/mess?search=${encodeURIComponent(area)}`,
-      },
-      {
         title: `PGs & Hostels in ${area}`,
         subtitle: `Explore verified student accommodation & stays in ${area}`,
         category: "accommodation",
         url: `/accommodation?search=${encodeURIComponent(area)}`,
       },
       {
-        title: `Buses & Routes for ${area}`,
-        subtitle: `Check bus numbers, timings and stops connecting ${area}`,
-        category: "transport",
-        url: `/transport?search=${encodeURIComponent(area)}`,
+        title: `Messes & Food in ${area}`,
+        subtitle: `Find student thalis, monthly mess passes & dining in ${area}`,
+        category: "mess",
+        url: `/mess?search=${encodeURIComponent(area)}`,
       },
     ]
   }
@@ -477,12 +471,6 @@ export function getLiveSearchSuggestions(query: string): SearchSuggestion[] {
       subtitle: "Daily meals, thalis & dining options",
       category: "mess",
       url: `/mess?search=${encodeURIComponent(clean)}`,
-    },
-    {
-      title: `Search "${clean}" in Transport`,
-      subtitle: "Bus routes, stops and numbers",
-      category: "transport",
-      url: `/transport`,
     },
   ]
 }

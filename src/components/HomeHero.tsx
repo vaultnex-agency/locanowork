@@ -3,12 +3,12 @@
 import React, { useState, useRef, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useModal } from "@/context/ModalContext"
 import {
   parseSearchQuery,
   getLiveSearchSuggestions,
   type SearchSuggestion,
 } from "@/lib/search/query-parser"
+import { ScrollReveal } from "@/components/ScrollReveal"
 import {
   Search,
   ArrowRight,
@@ -89,7 +89,6 @@ const badges = [
 /* ================================================================== */
 export function HomeHero() {
   const router = useRouter()
-  const { openSearch } = useModal()
 
   const [query, setQuery] = useState("")
   const [isOpen, setIsOpen] = useState(false)
@@ -113,7 +112,6 @@ export function HomeHero() {
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!query.trim()) {
-      openSearch("location")
       return
     }
 
@@ -156,7 +154,7 @@ export function HomeHero() {
       />
 
       {/* MAIN HERO CONTENT */}
-      <div className="relative z-30 max-w-5xl mx-auto w-full flex flex-col items-center justify-center text-center">
+      <div className="relative z-30 max-w-5xl mx-auto w-full flex flex-col items-center justify-center text-center animate-hero-fade">
         {/* Main Headline */}
         <h1 className="text-4xl sm:text-6xl md:text-[68px] lg:text-[76px] font-black tracking-tight leading-[1.06] drop-shadow-md mb-3.5 sm:mb-4">
           <span className="text-white block drop-shadow-lg">Settling</span>
@@ -171,13 +169,23 @@ export function HomeHero() {
         {/* Badges / Pill Tags */}
         <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 mb-7 sm:mb-8 text-xs sm:text-[13.5px] font-medium text-white px-2">
           {badges.map((badge, idx) => (
-            <div
+            <button
               key={idx}
-              className="inline-flex items-center gap-1.5 drop-shadow-md"
+              type="button"
+              onClick={() => {
+                const el = document.getElementById("journey")
+                if (el) {
+                  el.scrollIntoView({ behavior: "smooth" })
+                }
+              }}
+              className="inline-flex items-center gap-1.5 drop-shadow-md hover:scale-105 active:scale-95 transition-transform cursor-pointer group"
+              title="Learn how LOCANO works in 3 simple steps"
             >
               {badge.icon}
-              <span className="text-white drop-shadow-sm">{badge.label}</span>
-            </div>
+              <span className="text-white drop-shadow-sm group-hover:underline underline-offset-4 decoration-white/70">
+                {badge.label}
+              </span>
+            </button>
           ))}
         </div>
 
@@ -196,7 +204,7 @@ export function HomeHero() {
                 setIsOpen(true)
               }}
               onFocus={() => setIsOpen(true)}
-              placeholder="Search bus number, area, PG, mess, or service..."
+              placeholder="Search area, PG, mess, or service..."
               className="flex-1 bg-transparent text-xs sm:text-[15px] font-normal text-slate-800 placeholder:text-slate-400 focus:outline-none min-w-0"
               autoComplete="off"
               aria-label="Universal search"
@@ -280,29 +288,35 @@ export function HomeHero() {
 
         {/* Four Service Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 max-w-5xl w-full mx-auto">
-          {services.map((s) => {
+          {services.map((s, idx) => {
             const Icon = s.icon
             return (
-              <Link
+              <ScrollReveal
                 key={s.href}
-                href={s.href}
-                className="group flex items-center gap-3 bg-white/95 backdrop-blur-md rounded-2xl border border-white/80 shadow-lg shadow-black/5 hover:shadow-2xl hover:-translate-y-0.5 hover:bg-white transition-all p-3 sm:p-3.5 text-left cursor-pointer"
+                delay={idx * 110}
+                distance={14}
+                duration={600}
               >
-                <div
-                  className={`w-10 h-10 rounded-full ${s.iconBg} border flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform`}
+                <Link
+                  href={s.href}
+                  className="group flex items-center gap-3 bg-white/95 backdrop-blur-md rounded-2xl border border-white/80 shadow-lg shadow-black/5 hover:shadow-2xl hover:-translate-y-0.5 hover:bg-white transition-all p-3 sm:p-3.5 text-left cursor-pointer h-full"
                 >
-                  <Icon className="w-5 h-5" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-[13.5px] font-bold text-slate-900 group-hover:text-[#1f6fe5] transition-colors leading-snug">
-                    {s.title}
+                  <div
+                    className={`w-10 h-10 rounded-full ${s.iconBg} border flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform`}
+                  >
+                    <Icon className="w-5 h-5" />
                   </div>
-                  <div className="text-[11px] text-slate-500 leading-snug mt-0.5 truncate">
-                    {s.subtitle}
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[13.5px] font-bold text-slate-900 group-hover:text-[#1f6fe5] transition-colors leading-snug">
+                      {s.title}
+                    </div>
+                    <div className="text-[11px] text-slate-500 leading-snug mt-0.5 truncate">
+                      {s.subtitle}
+                    </div>
                   </div>
-                </div>
-                <ChevronRight className="w-4 h-4 text-slate-300 shrink-0 group-hover:text-[#1f6fe5] group-hover:translate-x-0.5 transition-all ml-1" />
-              </Link>
+                  <ChevronRight className="w-4 h-4 text-slate-300 shrink-0 group-hover:text-[#1f6fe5] group-hover:translate-x-0.5 transition-all ml-1" />
+                </Link>
+              </ScrollReveal>
             )
           })}
         </div>

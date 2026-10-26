@@ -1,4 +1,5 @@
 import { getSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase/client"
+import { getSupabaseServerClient } from "@/lib/supabase/server"
 import { mockAccommodations } from "@/data/mock-pgs"
 import type { AccommodationListing, AccommodationType, GenderPreference, SharingOption } from "@/types/accommodation"
 import type { Database } from "@/types/database"
@@ -127,7 +128,8 @@ export async function fetchAccommodationById(
 ): Promise<AccommodationListing | null> {
   if (isSupabaseConfigured()) {
     try {
-      const supabase = getSupabaseBrowserClient()
+      // Use the server client — this function is called from Server Components
+      const supabase = await getSupabaseServerClient()
       if (supabase) {
         const { data, error } = await supabase
           .from("accommodation_listings")

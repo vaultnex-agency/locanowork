@@ -44,21 +44,36 @@ export function Navbar() {
 
   // Scroll listener
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 24)
+    let ticking = false
+    let lastScrolled = false
+    let lastActive: "hero" | "about" | null = pathname === "/" ? "hero" : null
 
-      if (pathname === "/") {
-        const sectionIds = ["hero", "about"] as const
-        let active: "hero" | "about" = "hero"
-        for (const id of sectionIds) {
-          const el = document.getElementById(id)
-          if (el && el.getBoundingClientRect().top <= 150) {
-            active = id
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const scrolled = window.scrollY > 24
+          if (scrolled !== lastScrolled) {
+            lastScrolled = scrolled
+            setIsScrolled(scrolled)
           }
-        }
-        setActiveSection(active)
-      } else {
-        setActiveSection(null)
+
+          if (pathname === "/") {
+            const sectionIds = ["hero", "about"] as const
+            let active: "hero" | "about" = "hero"
+            for (const id of sectionIds) {
+              const el = document.getElementById(id)
+              if (el && el.getBoundingClientRect().top <= 150) {
+                active = id
+              }
+            }
+            if (active !== lastActive) {
+              lastActive = active
+              setActiveSection(active)
+            }
+          }
+          ticking = false
+        })
+        ticking = true
       }
     }
 

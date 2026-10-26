@@ -1,6 +1,7 @@
 import React from "react"
 import Link from "next/link"
 import Image from "next/image"
+import { ScrollReveal } from "@/components/ScrollReveal"
 import { MapPin, Route, ArrowUpRight, ArrowRight, Megaphone } from "lucide-react"
 
 export function AboutSection() {
@@ -13,7 +14,7 @@ export function AboutSection() {
         {/* TOP ABOUT SECTION GRID */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center">
           {/* LEFT COLUMN: Narrative & 3 Informational Points */}
-          <div className="lg:col-span-7">
+          <ScrollReveal className="lg:col-span-7" distance={16} duration={620}>
             {/* Category tag */}
             <div className="text-xs font-bold text-[#1f6fe5] tracking-wider uppercase mb-3">
               ABOUT LOCANO
@@ -88,10 +89,15 @@ export function AboutSection() {
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
-          </div>
+          </ScrollReveal>
 
           {/* RIGHT COLUMN: Coastal Card with Script Text & Decorative Shape */}
-          <div className="lg:col-span-5 flex justify-center lg:justify-end relative">
+          <ScrollReveal
+            className="lg:col-span-5 flex justify-center lg:justify-end relative"
+            delay={140}
+            distance={16}
+            duration={650}
+          >
             {/* Subtle decorative curved shape peeking behind right edge */}
             <div
               className="absolute -right-6 top-1/2 -translate-y-1/2 w-72 sm:w-84 h-72 sm:h-84 rounded-full bg-[#e1eefc]/70 blur-2xl -z-10 pointer-events-none"
@@ -113,32 +119,34 @@ export function AboutSection() {
                 priority
               />
             </div>
-          </div>
+          </ScrollReveal>
         </div>
 
         {/* BOTTOM CTA BANNER: Built for students. Made for Mangaluru. */}
-        <div className="mt-16 sm:mt-24 p-6 sm:p-8 rounded-3xl bg-[#eaf3fe] border border-blue-100/80 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-xs">
-          <div className="flex items-center gap-4 text-center sm:text-left flex-col sm:flex-row">
-            <div className="w-14 h-14 rounded-full bg-white text-[#1f6fe5] flex items-center justify-center shadow-xs shrink-0">
-              <Megaphone className="w-6 h-6" />
+        <ScrollReveal distance={16} duration={620} className="mt-16 sm:mt-24">
+          <div className="p-6 sm:p-8 rounded-3xl bg-[#eaf3fe] border border-blue-100/80 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-xs">
+            <div className="flex items-center gap-4 text-center sm:text-left flex-col sm:flex-row">
+              <div className="w-14 h-14 rounded-full bg-white text-[#1f6fe5] flex items-center justify-center shadow-xs shrink-0">
+                <Megaphone className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-lg sm:text-xl font-bold text-[#10233f]">
+                  Built for students. Made for Mangaluru.
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+                  Find what you need, when you need it.
+                </p>
+              </div>
             </div>
-            <div>
-              <h3 className="text-lg sm:text-xl font-bold text-[#10233f]">
-                Built for students. Made for Mangaluru.
-              </h3>
-              <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-                Find what you need, when you need it.
-              </p>
-            </div>
+            <Link
+              href="/transport"
+              className="px-6 py-3 rounded-full bg-[#10233f] text-white hover:bg-[#1f6fe5] transition-colors text-xs sm:text-sm font-semibold flex items-center gap-2 shadow-xs shrink-0"
+            >
+              <span>Get Started</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
           </div>
-          <Link
-            href="/transport"
-            className="px-6 py-3 rounded-full bg-[#10233f] text-white hover:bg-[#1f6fe5] transition-colors text-xs sm:text-sm font-semibold flex items-center gap-2 shadow-xs shrink-0"
-          >
-            <span>Get Started</span>
-            <ArrowRight className="w-4 h-4" />
-          </Link>
-        </div>
+        </ScrollReveal>
       </div>
     </section>
   )

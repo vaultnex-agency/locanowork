@@ -5,6 +5,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { useSearchParams } from "next/navigation"
 import { useModal } from "@/context/ModalContext"
+import { ScrollReveal } from "@/components/ScrollReveal"
 import { fetchAccommodations } from "@/lib/services/accommodation"
 import { DEMO_DISCLAIMER_TEXT } from "@/data/mock-pgs"
 import type { GenderPreference, AccommodationType, AccommodationListing } from "@/types/accommodation"
@@ -198,7 +199,7 @@ function AccommodationContent() {
           }}
         />
 
-        <div className="relative z-10 max-w-6xl mx-auto">
+        <div className="relative z-10 max-w-6xl mx-auto animate-hero-fade">
           {/* Badge: ACCOMMODATION */}
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] sm:text-xs font-semibold bg-white/15 backdrop-blur-md text-white/90 border border-white/20 tracking-wider uppercase mb-4">
             <Home className="w-3.5 h-3.5 text-blue-300" />
@@ -471,8 +472,11 @@ function AccommodationContent() {
               const isFavorite = favorites.has(listing.id)
 
               return (
-                <div
+                <ScrollReveal
                   key={listing.id}
+                  delay={Math.min((idx % 6) * 75, 450)}
+                  distance={16}
+                  duration={420}
                   className="group bg-white rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all overflow-hidden flex flex-col justify-between"
                 >
                   {/* CARD IMAGE CONTAINER */}
@@ -481,7 +485,7 @@ function AccommodationContent() {
                       src={imageUrl}
                       alt={listing.name}
                       fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-300"
+                      className="object-cover transition-transform duration-500 ease-out md:group-hover:scale-[1.03]"
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     />
 
@@ -581,7 +585,7 @@ function AccommodationContent() {
                       </Link>
                     </div>
                   </div>
-                </div>
+                </ScrollReveal>
               )
             })}
           </div>
@@ -623,24 +627,26 @@ function AccommodationContent() {
         )}
 
         {/* PG OWNER CALLOUT FOOTER CARD */}
-        <div className="mt-6 p-5 rounded-2xl bg-white border border-slate-200/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
-          <div className="flex items-center gap-3.5">
-            <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#1f6fe5] flex items-center justify-center shrink-0">
-              <Building2 className="w-5 h-5" />
+        <ScrollReveal distance={16} duration={420} className="mt-6">
+          <div className="p-5 rounded-2xl bg-white border border-slate-200/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
+            <div className="flex items-center gap-3.5">
+              <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#1f6fe5] flex items-center justify-center shrink-0">
+                <Building2 className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-xs sm:text-sm font-bold text-[#10233f]">Own a student PG, hostel, or flat in Mangaluru?</p>
+                <p className="text-[11px] sm:text-xs text-slate-500">Submit your property for admin verification and get listed on LOCANO.</p>
+              </div>
             </div>
-            <div>
-              <p className="text-xs sm:text-sm font-bold text-[#10233f]">Own a student PG, hostel, or flat in Mangaluru?</p>
-              <p className="text-[11px] sm:text-xs text-slate-500">Submit your property for admin verification and get listed on LOCANO.</p>
-            </div>
+            <Link
+              href="/pg-owner/submit"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#10233f] hover:bg-[#1f6fe5] text-white text-xs font-semibold transition-colors shrink-0 shadow-xs"
+            >
+              <span>PG Owner Submission</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
           </div>
-          <Link
-            href="/pg-owner/submit"
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#10233f] hover:bg-[#1f6fe5] text-white text-xs font-semibold transition-colors shrink-0 shadow-xs"
-          >
-            <span>PG Owner Submission</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
-        </div>
+        </ScrollReveal>
       </div>
     </div>
   )

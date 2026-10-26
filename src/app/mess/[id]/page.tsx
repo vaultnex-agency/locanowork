@@ -359,6 +359,7 @@ export default async function MessDetailPage({ params }: MessPageProps) {
               <div className="pt-2">
                 <EnquiryPreviewButton
                   listingName={listing.name}
+                  listingId={listing.id}
                   category="mess"
                   buttonText="Enquire for Mess Pass (Preview Only)"
                 />

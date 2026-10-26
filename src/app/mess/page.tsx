@@ -5,6 +5,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { useSearchParams } from "next/navigation"
 import { useModal } from "@/context/ModalContext"
+import { ScrollReveal } from "@/components/ScrollReveal"
 import { fetchMesses } from "@/lib/services/mess"
 import { DEMO_DISCLAIMER_TEXT } from "@/data/mock-messes"
 import type { DietaryType, ServiceType, MessListing } from "@/types/mess"
@@ -144,7 +145,7 @@ function MessListingContent() {
           backgroundPosition: "center 42%",
         }}
       >
-        <div className="relative z-10 max-w-6xl mx-auto">
+        <div className="relative z-10 max-w-6xl mx-auto animate-hero-fade">
           {/* Badge: FOOD & MESS */}
           <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-bold bg-[#ffedd5]/90 text-[#ea580c] border border-orange-200/80 tracking-wider uppercase mb-4 shadow-2xs">
             <Utensils className="w-3.5 h-3.5" />
@@ -434,8 +435,11 @@ function MessListingContent() {
               const isFavorite = favorites.has(listing.id)
 
               return (
-                <div
+                <ScrollReveal
                   key={listing.id}
+                  delay={Math.min((idx % 6) * 75, 450)}
+                  distance={16}
+                  duration={420}
                   className="group bg-white rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all overflow-hidden flex flex-col justify-between"
                 >
                   {/* CARD IMAGE CONTAINER */}
@@ -445,7 +449,7 @@ function MessListingContent() {
                       alt={listing.name}
                       fill
                       unoptimized={imageUrl.startsWith("http")}
-                      className="object-cover group-hover:scale-105 transition-transform duration-300"
+                      className="object-cover transition-transform duration-500 ease-out md:group-hover:scale-[1.03]"
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     />
 
@@ -564,7 +568,7 @@ function MessListingContent() {
                       </Link>
                     </div>
                   </div>
-                </div>
+                </ScrollReveal>
               )
             })}
           </div>

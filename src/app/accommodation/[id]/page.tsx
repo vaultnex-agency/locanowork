@@ -265,7 +265,7 @@ export default async function AccommodationDetailPage({
 
               {/* ENQUIRY PREVIEW BUTTON */}
               <div className="pt-2">
-                <EnquiryPreviewButton listingName={listing.name} />
+                <EnquiryPreviewButton listingName={listing.name} listingId={listing.id} />
               </div>
 
               <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 text-[11px] text-slate-500 leading-relaxed">
