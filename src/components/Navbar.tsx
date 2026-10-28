@@ -210,14 +210,14 @@ export function Navbar() {
           <Link href={pathname === "/" ? "#hero" : "/"} onClick={closeMenu} className={`px-2.5 py-1.5 rounded-full transition-colors sm:px-3 ${isHomeActive ? activeCls : inactiveCls}`}>
             Home
           </Link>
-          <Link href="/transport" onClick={closeMenu} className={`px-2.5 py-1.5 rounded-full transition-colors sm:px-3 ${isRoutesActive ? activeCls : inactiveCls}`}>
-            Routes
-          </Link>
           <Link href="/accommodation" onClick={closeMenu} className={`px-2.5 py-1.5 rounded-full transition-colors sm:px-3 ${pathname.startsWith("/accommodation") ? activeCls : inactiveCls}`}>
             Accommodation
           </Link>
           <Link href="/mess" onClick={closeMenu} className={`px-2.5 py-1.5 rounded-full transition-colors sm:px-3 ${pathname.startsWith("/mess") ? activeCls : inactiveCls}`}>
             Food &amp; Mess
+          </Link>
+          <Link href="/transport" onClick={closeMenu} className={`px-2.5 py-1.5 rounded-full transition-colors sm:px-3 ${isRoutesActive ? activeCls : inactiveCls}`}>
+            Transport
           </Link>
           <Link href={pathname === "/" ? "#about" : "/about"} onClick={closeMenu} className={`px-2.5 py-1.5 rounded-full transition-colors sm:px-3 ${isAboutActive ? activeCls : inactiveCls}`}>
             About
@@ -392,9 +392,9 @@ export function Navbar() {
             className="absolute left-0 right-0 top-[calc(100%+0.5rem)] flex flex-col gap-1 rounded-2xl border border-slate-200/70 bg-white/95 p-2 shadow-lg backdrop-blur-md sm:hidden"
           >
             <Link href={pathname === "/" ? "#hero" : "/"} onClick={closeMenu} className={`rounded-xl px-4 py-2.5 text-sm ${isHomeActive ? activeCls : inactiveCls}`}>Home</Link>
-            <Link href="/transport" onClick={closeMenu} className={`rounded-xl px-4 py-2.5 text-sm ${isRoutesActive ? activeCls : inactiveCls}`}>Routes</Link>
             <Link href="/accommodation" onClick={closeMenu} className={`rounded-xl px-4 py-2.5 text-sm ${pathname.startsWith("/accommodation") ? activeCls : inactiveCls}`}>Accommodation</Link>
             <Link href="/mess" onClick={closeMenu} className={`rounded-xl px-4 py-2.5 text-sm ${pathname.startsWith("/mess") ? activeCls : inactiveCls}`}>Food &amp; Mess</Link>
+            <Link href="/transport" onClick={closeMenu} className={`rounded-xl px-4 py-2.5 text-sm ${isRoutesActive ? activeCls : inactiveCls}`}>Transport</Link>
             <Link href={pathname === "/" ? "#about" : "/about"} onClick={closeMenu} className={`rounded-xl px-4 py-2.5 text-sm ${isAboutActive ? activeCls : inactiveCls}`}>About</Link>
             {authUser?.role === "pg_owner" && (
               <Link href="/pg-owner/submit" onClick={closeMenu} className="rounded-xl px-4 py-2.5 text-sm text-[#1f6fe5] font-semibold bg-blue-50/70">

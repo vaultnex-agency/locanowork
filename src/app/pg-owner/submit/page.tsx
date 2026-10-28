@@ -338,6 +338,7 @@ export default function PgOwnerSubmitPage() {
                   >
                     <option value="Boys">Boys PG</option>
                     <option value="Girls">Girls PG</option>
+                    <option value="Co-ed">Co-ed PG</option>
                   </select>
                 </div>
               </div>

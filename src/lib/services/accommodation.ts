@@ -55,7 +55,13 @@ export async function fetchAccommodations(
           .eq("is_demo", false)
 
         if (gender && gender !== "All") {
-          query = query.eq("gender", gender as GenderPreference)
+          if (gender === "Boys") {
+            query = query.in("gender", ["Boys", "Co-ed"])
+          } else if (gender === "Girls") {
+            query = query.in("gender", ["Girls", "Co-ed"])
+          } else {
+            query = query.eq("gender", gender as GenderPreference)
+          }
         }
         if (type && type !== "All") {
           query = query.eq("type", type as AccommodationType)
@@ -72,9 +78,9 @@ export async function fetchAccommodations(
             const q = search.trim().toLowerCase()
             results = results.filter(
               (item) =>
-                item.name.toLowerCase().includes(q) ||
-                item.area.toLowerCase().includes(q) ||
-                item.nearestLandmark.toLowerCase().includes(q)
+                (item.name || "").toLowerCase().includes(q) ||
+                (item.area || "").toLowerCase().includes(q) ||
+                (item.nearestLandmark || "").toLowerCase().includes(q)
             )
           }
           return { listings: results, isFromDatabase: true }

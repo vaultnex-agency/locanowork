@@ -6,6 +6,8 @@ import Image from "next/image"
 import { useSearchParams } from "next/navigation"
 import { useModal } from "@/context/ModalContext"
 import { ScrollReveal } from "@/components/ScrollReveal"
+import { CustomDropdown } from "@/components/CustomDropdown"
+import { LocationSearchInput } from "@/components/LocationSearchInput"
 import { fetchAccommodations } from "@/lib/services/accommodation"
 import type { GenderPreference, AccommodationListing } from "@/types/accommodation"
 import {
@@ -46,6 +48,20 @@ const POPULAR_AREAS = [
   "Pandeshwar",
   "Others",
 ] as const
+
+const PG_TYPE_OPTIONS = [
+  { value: "All", label: "All PGs (Any)" },
+  { value: "Boys", label: "Boys PG" },
+  { value: "Girls", label: "Girls PG" },
+  { value: "Co-ed", label: "Co-ed PG" },
+]
+
+const BUDGET_OPTIONS = [
+  { value: "All", label: "Any Budget" },
+  { value: "under-6000", label: "Under ₹6,000" },
+  { value: "6000-8000", label: "₹6,000 - ₹8,000" },
+  { value: "above-8000", label: "Above ₹8,000" },
+]
 
 // Amenity icon resolver
 function getAmenityIcon(name: string) {
@@ -97,13 +113,15 @@ function AccommodationContent() {
   const [favorites, setFavorites] = useState<Set<string>>(new Set())
 
   const locationQuery = customSearch !== null ? customSearch : urlSearch
-  const genderFilter: "Boys" | "Girls" =
-    customGender === "Girls" || (customGender === null && urlGender === "Girls")
-      ? "Girls"
-      : "Boys"
+  const genderFilter: FilterGender =
+    customGender !== null
+      ? customGender
+      : ["All", "Boys", "Girls", "Co-ed"].includes(urlGender)
+      ? urlGender
+      : "All"
 
   const setLocationQuery = (val: string) => setCustomSearch(val)
-  const setGenderFilter = (val: "Boys" | "Girls") => setCustomGender(val)
+  const setGenderFilter = (val: FilterGender) => setCustomGender(val)
 
   const [rawListings, setRawListings] = useState<AccommodationListing[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -246,77 +264,38 @@ function AccommodationContent() {
         <div className="relative z-20 -mt-10 sm:-mt-12 bg-white rounded-2xl sm:rounded-3xl shadow-xl shadow-slate-900/[0.08] border border-slate-100 p-3 sm:p-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 items-center">
             {/* Field 1: Location / Area */}
-            <div className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl border border-slate-200/90 bg-slate-50/60 focus-within:border-[#1f6fe5] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#1f6fe5]/15 transition-all">
-              <MapPin className="w-4 h-4 text-[#1f6fe5] shrink-0" />
-              <div className="flex-1 min-w-0">
-                <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 leading-none mb-1">
-                  Location / Area
-                </div>
-                <input
-                  type="text"
-                  value={locationQuery}
-                  onChange={(e) => setLocationQuery(e.target.value)}
-                  placeholder="e.g. Balmatta, Deralakatte..."
-                  className="w-full bg-transparent text-xs sm:text-[13px] font-semibold text-[#10233f] placeholder:text-slate-400 placeholder:font-normal focus:outline-none"
-                />
-              </div>
-              {locationQuery && (
-                <button
-                  type="button"
-                  onClick={() => setLocationQuery("")}
-                  className="text-slate-400 hover:text-slate-600 p-1 cursor-pointer"
-                  aria-label="Clear area search"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              )}
-            </div>
+            <LocationSearchInput
+              value={locationQuery}
+              onChange={setLocationQuery}
+              placeholder="e.g. Balmatta, Deralakatte..."
+              accentColor="blue"
+            />
 
             {/* Field 2: PG Type */}
-            <div className="relative flex items-center gap-3 px-3.5 py-2.5 rounded-xl border border-slate-200/90 bg-slate-50/60 focus-within:border-[#1f6fe5] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#1f6fe5]/15 transition-all">
-              <Home className="w-4 h-4 text-[#1f6fe5] shrink-0" />
-              <div className="flex-1 min-w-0">
-                <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 leading-none mb-1">
-                  PG Type
-                </div>
-                <select
-                  value={genderFilter}
-                  onChange={(e) => setGenderFilter(e.target.value as "Boys" | "Girls")}
-                  className="w-full bg-transparent text-xs sm:text-[13px] font-semibold text-[#10233f] focus:outline-none cursor-pointer appearance-none pr-5"
-                >
-                  <option value="Boys">Boys</option>
-                  <option value="Girls">Girls</option>
-                </select>
-              </div>
-              <ChevronDown className="w-4 h-4 text-slate-400 pointer-events-none absolute right-3 top-1/2 -translate-y-1/2" />
-            </div>
+            <CustomDropdown
+              label="PG Type"
+              value={genderFilter}
+              options={PG_TYPE_OPTIONS}
+              onChange={(val) => setGenderFilter(val as FilterGender)}
+              icon={<Home className="w-4 h-4 text-[#1f6fe5] shrink-0" />}
+              accentColor="blue"
+            />
 
             {/* Field 3: Monthly Budget */}
-            <div className="relative flex items-center gap-3 px-3.5 py-2.5 rounded-xl border border-slate-200/90 bg-slate-50/60 focus-within:border-[#1f6fe5] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#1f6fe5]/15 transition-all">
-              <IndianRupee className="w-4 h-4 text-[#1f6fe5] shrink-0" />
-              <div className="flex-1 min-w-0">
-                <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 leading-none mb-1">
-                  Budget (per month)
-                </div>
-                <select
-                  value={budgetFilter}
-                  onChange={(e) => setBudgetFilter(e.target.value)}
-                  className="w-full bg-transparent text-xs sm:text-[13px] font-semibold text-[#10233f] focus:outline-none cursor-pointer appearance-none pr-5"
-                >
-                  <option value="All">Any Budget</option>
-                  <option value="under-6000">Under ₹6,000</option>
-                  <option value="6000-8000">₹6,000 - ₹8,000</option>
-                  <option value="above-8000">Above ₹8,000</option>
-                </select>
-              </div>
-              <ChevronDown className="w-4 h-4 text-slate-400 pointer-events-none absolute right-3 top-1/2 -translate-y-1/2" />
-            </div>
+            <CustomDropdown
+              label="Budget (per month)"
+              value={budgetFilter}
+              options={BUDGET_OPTIONS}
+              onChange={(val) => setBudgetFilter(val)}
+              icon={<IndianRupee className="w-4 h-4 text-[#1f6fe5] shrink-0" />}
+              accentColor="blue"
+            />
 
             {/* Field 4: Search Button */}
             <button
               type="button"
               onClick={() => loadListings()}
-              className="w-full h-full min-h-[46px] rounded-xl bg-[#1f6fe5] hover:bg-[#1856b8] text-white font-semibold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xs transition-colors cursor-pointer"
+              className="w-full h-[50px] rounded-xl bg-[#1f6fe5] hover:bg-[#1856b8] text-white font-semibold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xs transition-colors cursor-pointer"
             >
               <Search className="w-4 h-4" />
               <span>Search PGs</span>
@@ -459,109 +438,112 @@ function AccommodationContent() {
                   delay={Math.min((idx % 6) * 75, 450)}
                   distance={16}
                   duration={420}
-                  className="group bg-white rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all overflow-hidden flex flex-col justify-between"
+                  className="h-full"
                 >
-                  {/* CARD IMAGE CONTAINER */}
-                  <div className="relative h-48 sm:h-52 w-full overflow-hidden bg-slate-100">
-                    <Image
-                      src={imageUrl}
-                      alt={listing.name}
-                      fill
-                      className="object-cover transition-transform duration-500 ease-out md:group-hover:scale-[1.03]"
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    />
-
-                    {/* Top-left: Verified Badge */}
-                    <div className="absolute top-3 left-3 z-10">
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/95 backdrop-blur-md text-emerald-600 text-[11px] font-bold shadow-xs border border-emerald-100">
-                        <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-                        <span>Verified</span>
-                      </span>
-                    </div>
-
-                    {/* Top-right: Heart Favorite button */}
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.preventDefault()
-                        toggleFavorite(listing.id)
-                      }}
-                      aria-label="Save to favorites"
-                      className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-black/35 hover:bg-black/55 backdrop-blur-md text-white flex items-center justify-center transition cursor-pointer"
-                    >
-                      <Heart
-                        className={`w-4 h-4 transition-colors ${
-                          isFavorite ? "fill-rose-500 text-rose-500" : ""
-                        }`}
+                  <Link
+                    href={`/accommodation/${listing.id}`}
+                    className="group bg-white rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all overflow-hidden flex flex-col justify-between h-full cursor-pointer"
+                  >
+                    {/* CARD IMAGE CONTAINER */}
+                    <div className="relative h-48 sm:h-52 w-full overflow-hidden bg-slate-100">
+                      <Image
+                        src={imageUrl}
+                        alt={listing.name}
+                        fill
+                        className="object-cover transition-transform duration-500 ease-out md:group-hover:scale-[1.03]"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       />
-                    </button>
 
-                    {/* Bottom-right: Photo count badge */}
-                    <div className="absolute bottom-2.5 right-2.5 z-10">
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-md text-white text-[11px] font-medium">
-                        <Camera className="w-3.5 h-3.5" />
-                        <span>{photoCount} photos</span>
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* CARD BODY */}
-                  <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between">
-                    <div>
-                      {/* Name & Type Tag */}
-                      <div className="flex items-start justify-between gap-2 mb-1.5">
-                        <h3 className="text-[16px] sm:text-[17px] font-bold text-[#10233f] group-hover:text-[#1f6fe5] transition-colors leading-snug line-clamp-1">
-                          {listing.name}
-                        </h3>
-                        <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-blue-50 text-[#1f6fe5] border border-blue-100 shrink-0">
-                          {listing.gender === "Girls" ? "Girls PG" : "Boys PG"}
+                      {/* Top-left: Verified Badge */}
+                      <div className="absolute top-3 left-3 z-10">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/95 backdrop-blur-md text-emerald-600 text-[11px] font-bold shadow-xs border border-emerald-100">
+                          <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+                          <span>Verified</span>
                         </span>
                       </div>
 
-                      {/* Location & Landmark / Distance */}
-                      <div className="flex items-center gap-1.5 text-xs text-slate-500 mb-3">
-                        <MapPin className="w-3.5 h-3.5 text-[#1f6fe5] shrink-0" />
-                        <span className="font-semibold text-slate-700">{listing.area}</span>
-                        <span className="text-slate-400">· {listing.nearestLandmark}</span>
-                      </div>
+                      {/* Top-right: Heart Favorite button */}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          toggleFavorite(listing.id)
+                        }}
+                        aria-label="Save to favorites"
+                        className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-black/35 hover:bg-black/55 backdrop-blur-md text-white flex items-center justify-center transition cursor-pointer"
+                      >
+                        <Heart
+                          className={`w-4 h-4 transition-colors ${
+                            isFavorite ? "fill-rose-500 text-rose-500" : ""
+                          }`}
+                        />
+                      </button>
 
-                      {/* Amenities Row */}
-                      <div className="flex flex-wrap items-center gap-1.5 mb-4">
-                        {listing.amenities.slice(0, 3).map((amenity) => (
-                          <span
-                            key={amenity}
-                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-50 border border-slate-200/70 text-slate-600 text-[11px] font-medium"
-                          >
-                            {getAmenityIcon(amenity)}
-                            <span>{getAmenityLabel(amenity)}</span>
-                          </span>
-                        ))}
-                        {listing.amenities.length > 3 && (
-                          <span className="text-[11px] font-semibold px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-500">
-                            +{listing.amenities.length - 3}
-                          </span>
-                        )}
+                      {/* Bottom-right: Photo count badge */}
+                      <div className="absolute bottom-2.5 right-2.5 z-10">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-md text-white text-[11px] font-medium">
+                          <Camera className="w-3.5 h-3.5" />
+                          <span>{photoCount} photos</span>
+                        </span>
                       </div>
                     </div>
 
-                    {/* Price & View Details Action */}
-                    <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+                    {/* CARD BODY */}
+                    <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between">
                       <div>
-                        <div className="text-lg sm:text-xl font-extrabold text-[#10233f]">
-                          ₹{listing.monthlyRentFrom.toLocaleString("en-IN")}
-                          <span className="text-xs font-normal text-slate-500">/month</span>
+                        {/* Name & Type Tag */}
+                        <div className="flex items-start justify-between gap-2 mb-1.5">
+                          <h3 className="text-[16px] sm:text-[17px] font-bold text-[#10233f] group-hover:text-[#1f6fe5] transition-colors leading-snug line-clamp-1">
+                            {listing.name}
+                          </h3>
+                          <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-blue-50 text-[#1f6fe5] border border-blue-100 shrink-0">
+                            {listing.gender === "Girls" ? "Girls PG" : listing.gender === "Co-ed" ? "Co-ed PG" : "Boys PG"}
+                          </span>
+                        </div>
+
+                        {/* Location & Landmark / Distance */}
+                        <div className="flex items-center gap-1.5 text-xs text-slate-500 mb-3">
+                          <MapPin className="w-3.5 h-3.5 text-[#1f6fe5] shrink-0" />
+                          <span className="font-semibold text-slate-700">{listing.area}</span>
+                          <span className="text-slate-400">· {listing.nearestLandmark}</span>
+                        </div>
+
+                        {/* Amenities Row */}
+                        <div className="flex flex-wrap items-center gap-1.5 mb-4">
+                          {listing.amenities.slice(0, 3).map((amenity) => (
+                            <span
+                              key={amenity}
+                              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-50 border border-slate-200/70 text-slate-600 text-[11px] font-medium"
+                            >
+                              {getAmenityIcon(amenity)}
+                              <span>{getAmenityLabel(amenity)}</span>
+                            </span>
+                          ))}
+                          {listing.amenities.length > 3 && (
+                            <span className="text-[11px] font-semibold px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-500">
+                              +{listing.amenities.length - 3}
+                            </span>
+                          )}
                         </div>
                       </div>
 
-                      <Link
-                        href={`/accommodation/${listing.id}`}
-                        className="inline-flex items-center gap-1 px-4 py-2 rounded-xl bg-[#10233f] hover:bg-[#1f6fe5] text-white text-xs font-semibold transition-colors shadow-xs"
-                      >
-                        <span>View Details</span>
-                        <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
-                      </Link>
+                      {/* Price & View Details Action */}
+                      <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+                        <div>
+                          <div className="text-lg sm:text-xl font-extrabold text-[#10233f]">
+                            ₹{listing.monthlyRentFrom.toLocaleString("en-IN")}
+                            <span className="text-xs font-normal text-slate-500">/month</span>
+                          </div>
+                        </div>
+
+                        <div className="inline-flex items-center gap-1 px-4 py-2 rounded-xl bg-[#10233f] group-hover:bg-[#1f6fe5] text-white text-xs font-semibold transition-colors shadow-xs">
+                          <span>View Details</span>
+                          <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  </Link>
                 </ScrollReveal>
               )
             })}
@@ -583,7 +565,7 @@ function AccommodationContent() {
               onClick={() => {
                 setLocationQuery("")
                 setBudgetFilter("All")
-                setGenderFilter("Boys")
+                setGenderFilter("All")
               }}
               className="mt-2 px-4 py-2 rounded-full bg-[#1f6fe5] text-white text-xs font-semibold hover:bg-blue-600 transition-colors cursor-pointer"
             >
