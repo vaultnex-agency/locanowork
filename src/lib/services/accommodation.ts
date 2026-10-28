@@ -1,6 +1,4 @@
 import { getSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase/client"
-import { getSupabaseServerClient } from "@/lib/supabase/server"
-import { mockAccommodations } from "@/data/mock-pgs"
 import type { AccommodationListing, AccommodationType, GenderPreference, SharingOption } from "@/types/accommodation"
 import type { Database } from "@/types/database"
 
@@ -44,9 +42,7 @@ function mapRowToListing(row: AccommodationRow): AccommodationListing {
 export async function fetchAccommodations(
   params: FetchAccommodationsParams = {}
 ): Promise<{ listings: AccommodationListing[]; isFromDatabase: boolean; error?: string }> {
-  const isProd = process.env.NODE_ENV === "production"
-  // In production, demo data is strictly disabled by default
-  const { search, gender, type, includeDemo = !isProd } = params
+  const { search, gender, type } = params
 
   if (isSupabaseConfigured()) {
     try {
@@ -55,7 +51,8 @@ export async function fetchAccommodations(
         let query = supabase
           .from("accommodation_listings")
           .select("*")
-          .in("status", ["published"])
+          .eq("status", "published")
+          .eq("is_demo", false)
 
         if (gender && gender !== "All") {
           query = query.eq("gender", gender as GenderPreference)
@@ -63,18 +60,12 @@ export async function fetchAccommodations(
         if (type && type !== "All") {
           query = query.eq("type", type as AccommodationType)
         }
-        // In production or when includeDemo is false, never query demo records
-        if (isProd || !includeDemo) {
-          query = query.eq("is_demo", false)
-        }
 
         const { data, error } = await query.order("created_at", { ascending: false })
 
         if (error) {
           console.error("Supabase accommodation query error:", error.message)
-          if (isProd) {
-            return { listings: [], isFromDatabase: true, error: error.message }
-          }
+          return { listings: [], isFromDatabase: true, error: error.message }
         } else if (data) {
           let results = data.map(mapRowToListing)
           if (search) {
@@ -86,41 +77,16 @@ export async function fetchAccommodations(
                 item.nearestLandmark.toLowerCase().includes(q)
             )
           }
-          // When database is live, return its exact results (even if empty); do not leak mock data
           return { listings: results, isFromDatabase: true }
         }
       }
     } catch (err) {
       console.warn("Supabase query error:", err)
-      if (isProd) {
-        return { listings: [], isFromDatabase: true }
-      }
+      return { listings: [], isFromDatabase: true }
     }
   }
 
-  // Development-only fallback preview when Supabase credentials are not configured
-  if (isProd || !includeDemo) {
-    return { listings: [], isFromDatabase: false }
-  }
-
-  let demoListings = [...mockAccommodations]
-  if (gender && gender !== "All") {
-    demoListings = demoListings.filter((i) => i.gender === gender)
-  }
-  if (type && type !== "All") {
-    demoListings = demoListings.filter((i) => i.type === type)
-  }
-  if (search) {
-    const q = search.trim().toLowerCase()
-    demoListings = demoListings.filter(
-      (item) =>
-        item.name.toLowerCase().includes(q) ||
-        item.area.toLowerCase().includes(q) ||
-        item.nearestLandmark.toLowerCase().includes(q)
-    )
-  }
-
-  return { listings: demoListings, isFromDatabase: false }
+  return { listings: [], isFromDatabase: false }
 }
 
 export async function fetchAccommodationById(
@@ -128,26 +94,25 @@ export async function fetchAccommodationById(
 ): Promise<AccommodationListing | null> {
   if (isSupabaseConfigured()) {
     try {
-      // Use the server client — this function is called from Server Components
-      const supabase = await getSupabaseServerClient()
+      const supabase = getSupabaseBrowserClient()
       if (supabase) {
         const { data, error } = await supabase
           .from("accommodation_listings")
           .select("*")
           .eq("id", id)
+          .eq("is_demo", false)
           .single()
 
         if (!error && data) {
           return mapRowToListing(data)
         }
       }
-    } catch {
-      // fallback to mock
+    } catch (err) {
+      console.warn("Error fetching accommodation by id:", err)
     }
   }
 
-  const mock = mockAccommodations.find((i) => i.id === id)
-  return mock ? { ...mock, isDemo: true } : null
+  return null
 }
 
 export interface SubmitAccommodationInput {

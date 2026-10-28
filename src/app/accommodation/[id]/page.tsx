@@ -3,13 +3,11 @@ import Link from "next/link"
 import Image from "next/image"
 import { notFound } from "next/navigation"
 import { fetchAccommodationById } from "@/lib/services/accommodation"
-import { DEMO_DISCLAIMER_TEXT } from "@/data/mock-pgs"
 import { EnquiryPreviewButton } from "@/components/EnquiryPreviewButton"
 import {
   ArrowLeft,
   MapPin,
   CheckCircle2,
-  AlertCircle,
   Home,
   Sparkles,
   Info,
@@ -63,15 +61,6 @@ export default async function AccommodationDetailPage({
           </Link>
         </div>
 
-        {/* DEMO NOTICE BANNER */}
-        {listing.isDemo && (
-          <div className="mb-6 p-4 rounded-2xl bg-amber-50 border border-amber-200/80 text-amber-900 text-xs sm:text-sm flex items-start gap-3 locano-card shadow-xs">
-            <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-            <div className="leading-relaxed">
-              <span className="font-bold">Preview Notice:</span> {DEMO_DISCLAIMER_TEXT}
-            </div>
-          </div>
-        )}
 
         {/* MAIN PROPERTY HEADER CARD */}
         <div className="p-6 sm:p-8 bg-white rounded-3xl border border-slate-100 locano-card mb-8">
@@ -86,16 +75,10 @@ export default async function AccommodationDetailPage({
                 <span className="text-xs font-semibold px-3 py-1 rounded-full bg-slate-100 text-slate-700">
                   {listing.type}
                 </span>
-                {listing.isDemo ? (
-                  <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-500">
-                    Demo Listing
-                  </span>
-                ) : (
-                  <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
-                    <ShieldCheck className="w-3.5 h-3.5" />
-                    <span>Verified Property</span>
-                  </span>
-                )}
+                <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  <span>Verified Property</span>
+                </span>
               </div>
               <h1 className="text-2xl sm:text-4xl font-extrabold text-[#10233f] tracking-tight">
                 {listing.name}

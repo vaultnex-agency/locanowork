@@ -20,17 +20,16 @@ export function ScrollReveal({
   ...props
 }: ScrollRevealProps) {
   const ref = useRef<HTMLDivElement>(null)
-  const [isVisible, setIsVisible] = useState(false)
-
-  useEffect(() => {
-    if (
-      typeof window === "undefined" ||
+  const [isVisible, setIsVisible] = useState(() => {
+    if (typeof window === "undefined") return false
+    return (
       typeof IntersectionObserver === "undefined" ||
       window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    ) {
-      setIsVisible(true)
-      return
-    }
+    )
+  })
+
+  useEffect(() => {
+    if (isVisible) return
 
     const el = ref.current
     if (!el) return
@@ -50,7 +49,7 @@ export function ScrollReveal({
 
     observer.observe(el)
     return () => observer.disconnect()
-  }, [])
+  }, [isVisible])
 
   return (
     <div

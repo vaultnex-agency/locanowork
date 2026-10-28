@@ -7,8 +7,7 @@ import { useSearchParams } from "next/navigation"
 import { useModal } from "@/context/ModalContext"
 import { ScrollReveal } from "@/components/ScrollReveal"
 import { fetchAccommodations } from "@/lib/services/accommodation"
-import { DEMO_DISCLAIMER_TEXT } from "@/data/mock-pgs"
-import type { GenderPreference, AccommodationType, AccommodationListing } from "@/types/accommodation"
+import type { GenderPreference, AccommodationListing } from "@/types/accommodation"
 import {
   Home,
   MapPin,
@@ -34,7 +33,6 @@ import {
 } from "lucide-react"
 
 type FilterGender = "All" | GenderPreference
-type FilterType = "All" | AccommodationType
 
 const POPULAR_AREAS = [
   "All Areas",
@@ -92,32 +90,20 @@ function AccommodationContent() {
 
   const urlSearch = searchParams.get("search") || ""
   const urlGender = (searchParams.get("gender") as FilterGender) || "All"
-  const urlType = (searchParams.get("type") as FilterType) || "All"
-
   const [customSearch, setCustomSearch] = useState<string | null>(null)
   const [customGender, setCustomGender] = useState<FilterGender | null>(null)
-  const [customType, setCustomType] = useState<FilterType | null>(null)
   const [budgetFilter, setBudgetFilter] = useState<string>("All")
   const [sortBy, setSortBy] = useState<string>("nearest")
   const [favorites, setFavorites] = useState<Set<string>>(new Set())
 
   const locationQuery = customSearch !== null ? customSearch : urlSearch
-  const genderFilter =
-    customGender !== null
-      ? customGender
-      : ["All", "Boys", "Girls", "Co-ed"].includes(urlGender)
-      ? urlGender
-      : "All"
-  const typeFilter =
-    customType !== null
-      ? customType
-      : ["All", "PG", "Hostel", "Flat / Shared Apartment"].includes(urlType)
-      ? urlType
-      : "All"
+  const genderFilter: "Boys" | "Girls" =
+    customGender === "Girls" || (customGender === null && urlGender === "Girls")
+      ? "Girls"
+      : "Boys"
 
   const setLocationQuery = (val: string) => setCustomSearch(val)
-  const setGenderFilter = (val: FilterGender) => setCustomGender(val)
-  const setTypeFilter = (val: FilterType) => setCustomType(val)
+  const setGenderFilter = (val: "Boys" | "Girls") => setCustomGender(val)
 
   const [rawListings, setRawListings] = useState<AccommodationListing[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -138,9 +124,8 @@ function AccommodationContent() {
     try {
       const res = await fetchAccommodations({
         gender: genderFilter,
-        type: typeFilter,
+        type: "All",
         search: locationQuery,
-        includeDemo: true,
       })
       setRawListings(res.listings)
     } catch {
@@ -148,7 +133,7 @@ function AccommodationContent() {
     } finally {
       setIsLoading(false)
     }
-  }, [genderFilter, typeFilter, locationQuery])
+  }, [genderFilter, locationQuery])
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -178,7 +163,6 @@ function AccommodationContent() {
     return result
   }, [rawListings, budgetFilter, sortBy])
 
-  const hasDemoListings = rawListings.some((l) => l.isDemo)
 
   return (
     <div className="min-h-screen bg-[#f8fafc]">
@@ -215,7 +199,7 @@ function AccommodationContent() {
 
           {/* Subtitle */}
           <p className="text-sm sm:text-base text-slate-200/90 max-w-xl leading-relaxed mb-6 font-normal">
-            Verified student PGs, hostels and shared apartments — with real photos, genuine details and easy contact.
+            Verified Boys and Girls student PGs — with real photos, genuine details and easy contact.
           </p>
 
           {/* Three Feature Highlights */}
@@ -296,14 +280,12 @@ function AccommodationContent() {
                   PG Type
                 </div>
                 <select
-                  value={typeFilter}
-                  onChange={(e) => setTypeFilter(e.target.value as FilterType)}
+                  value={genderFilter}
+                  onChange={(e) => setGenderFilter(e.target.value as "Boys" | "Girls")}
                   className="w-full bg-transparent text-xs sm:text-[13px] font-semibold text-[#10233f] focus:outline-none cursor-pointer appearance-none pr-5"
                 >
-                  <option value="All">All Types</option>
-                  <option value="PG">PG</option>
-                  <option value="Hostel">Hostel</option>
-                  <option value="Shared Apartment">Shared Apartment</option>
+                  <option value="Boys">Boys</option>
+                  <option value="Girls">Girls</option>
                 </select>
               </div>
               <ChevronDown className="w-4 h-4 text-slate-400 pointer-events-none absolute right-3 top-1/2 -translate-y-1/2" />
@@ -531,13 +513,8 @@ function AccommodationContent() {
                         <h3 className="text-[16px] sm:text-[17px] font-bold text-[#10233f] group-hover:text-[#1f6fe5] transition-colors leading-snug line-clamp-1">
                           {listing.name}
                         </h3>
-                        <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 shrink-0">
-                          {listing.type}
-                          {listing.gender === "Girls"
-                            ? " (Girls)"
-                            : listing.gender === "Boys"
-                            ? " (Boys)"
-                            : ""}
+                        <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-blue-50 text-[#1f6fe5] border border-blue-100 shrink-0">
+                          {listing.gender === "Girls" ? "Girls PG" : "Boys PG"}
                         </span>
                       </div>
 
@@ -604,10 +581,9 @@ function AccommodationContent() {
             <button
               type="button"
               onClick={() => {
-                setTypeFilter("All")
                 setLocationQuery("")
                 setBudgetFilter("All")
-                setGenderFilter("All")
+                setGenderFilter("Boys")
               }}
               className="mt-2 px-4 py-2 rounded-full bg-[#1f6fe5] text-white text-xs font-semibold hover:bg-blue-600 transition-colors cursor-pointer"
             >
@@ -616,15 +592,6 @@ function AccommodationContent() {
           </div>
         )}
 
-        {/* DEMO NOTICE (WHEN ACTIVE) */}
-        {hasDemoListings && (
-          <div className="mt-12 p-3 sm:p-3.5 rounded-xl bg-amber-50/90 border border-amber-200/80 text-amber-900 text-xs flex items-center gap-2.5 shadow-2xs">
-            <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
-            <div className="leading-relaxed">
-              <span className="font-bold">Development Preview Notice:</span> {DEMO_DISCLAIMER_TEXT}
-            </div>
-          </div>
-        )}
 
         {/* PG OWNER CALLOUT FOOTER CARD */}
         <ScrollReveal distance={16} duration={420} className="mt-6">

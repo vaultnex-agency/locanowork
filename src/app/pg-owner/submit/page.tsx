@@ -53,7 +53,7 @@ const ROOM_FEATURE_OPTIONS = [
 export default function PgOwnerSubmitPage() {
   const [name, setName] = useState("")
   const [tagline, setTagline] = useState("")
-  const [type, setType] = useState<AccommodationType>("PG")
+  const type: AccommodationType = "PG"
   const [gender, setGender] = useState<GenderPreference>("Boys")
   const [area, setArea] = useState("Kadri")
   const [customArea, setCustomArea] = useState("")
@@ -327,36 +327,18 @@ export default function PgOwnerSubmitPage() {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      Accommodation Type
-                    </label>
-                    <select
-                      value={type}
-                      onChange={(e) => setType(e.target.value as AccommodationType)}
-                      className="w-full px-3 py-2.5 rounded-2xl border border-slate-200 text-xs sm:text-sm text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-[#1f6fe5]"
-                    >
-                      <option value="PG">Paying Guest (PG)</option>
-                      <option value="Hostel">Hostel</option>
-                      <option value="Shared Apartment">Shared Apartment</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      Gender Preference
-                    </label>
-                    <select
-                      value={gender}
-                      onChange={(e) => setGender(e.target.value as GenderPreference)}
-                      className="w-full px-3 py-2.5 rounded-2xl border border-slate-200 text-xs sm:text-sm text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-[#1f6fe5]"
-                    >
-                      <option value="Boys">Boys</option>
-                      <option value="Girls">Girls</option>
-                      <option value="Co-ed">Co-ed</option>
-                    </select>
-                  </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    PG Type
+                  </label>
+                  <select
+                    value={gender}
+                    onChange={(e) => setGender(e.target.value as GenderPreference)}
+                    className="w-full px-3 py-2.5 rounded-2xl border border-slate-200 text-xs sm:text-sm text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-[#1f6fe5]"
+                  >
+                    <option value="Boys">Boys PG</option>
+                    <option value="Girls">Girls PG</option>
+                  </select>
                 </div>
               </div>
 

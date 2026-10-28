@@ -24,6 +24,7 @@ export interface AuthResponse {
     role?: UserRole
   } | null
   needsConfig?: boolean
+  requiresEmailConfirmation?: boolean
 }
 
 export async function signUpUser(data: SignUpData): Promise<AuthResponse> {
@@ -45,10 +46,16 @@ export async function signUpUser(data: SignUpData): Promise<AuthResponse> {
   }
 
   try {
+    const redirectUrl =
+      typeof window !== "undefined"
+        ? `${window.location.origin}/auth/confirmed`
+        : undefined
+
     const { data: authResult, error } = await supabase.auth.signUp({
       email: data.email,
       password: data.password,
       options: {
+        emailRedirectTo: redirectUrl,
         data: {
           full_name: data.fullName,
           phone: data.phone,
@@ -65,18 +72,21 @@ export async function signUpUser(data: SignUpData): Promise<AuthResponse> {
       }
     }
 
-    const roleName = data.role === "pg_owner" ? "PG Owner" : "Student"
+    // In Supabase, if email confirmation is enabled, session is null until user clicks the email link
+    const requiresEmailConfirmation = !authResult.session
+
     return {
       success: true,
+      requiresEmailConfirmation,
       user: {
         id: authResult.user?.id || "",
-        email: authResult.user?.email,
+        email: authResult.user?.email || data.email,
         role: data.role,
       },
       message:
         data.role === "pg_owner"
-          ? "PG Owner account registered! A Locano administrator will contact you manually for onboarding. You can now submit your PG details."
-          : `Welcome to LOCANO! Your ${roleName} account was successfully created.`,
+          ? "PG Owner account registered! Please check your email to confirm your account. A Locano administrator will also contact you manually for onboarding."
+          : `Registration successful! We have sent a confirmation link to ${data.email}. You must check your email and click the confirmation link to activate your account before you can sign in.`,
     }
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Unexpected registration error"
@@ -84,6 +94,41 @@ export async function signUpUser(data: SignUpData): Promise<AuthResponse> {
       success: false,
       message: msg,
     }
+  }
+}
+
+export async function resendConfirmationEmail(email: string): Promise<{ success: boolean; message: string }> {
+  const supabase = getSupabaseBrowserClient()
+  if (!supabase) {
+    return { success: false, message: "Database client is currently unavailable." }
+  }
+
+  try {
+    const cleanEmail = email.trim().toLowerCase()
+    const redirectUrl =
+      typeof window !== "undefined"
+        ? `${window.location.origin}/auth/confirmed`
+        : undefined
+
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email: cleanEmail,
+      options: {
+        emailRedirectTo: redirectUrl,
+      },
+    })
+
+    if (error) {
+      return { success: false, message: error.message }
+    }
+
+    return {
+      success: true,
+      message: `A fresh confirmation email has been dispatched to ${cleanEmail}. Please check your inbox and Spam folder.`,
+    }
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : "Failed to resend confirmation email"
+    return { success: false, message: msg }
   }
 }
 
@@ -112,9 +157,13 @@ export async function signInUser(data: SignInData): Promise<AuthResponse> {
     })
 
     if (error) {
+      let friendlyMessage = error.message
+      if (error.message.toLowerCase().includes("email not confirmed")) {
+        friendlyMessage = "Your email is not confirmed yet. Please check your email inbox (and Spam folder) for the verification link to confirm your account before signing in."
+      }
       return {
         success: false,
-        message: error.message,
+        message: friendlyMessage,
       }
     }
 

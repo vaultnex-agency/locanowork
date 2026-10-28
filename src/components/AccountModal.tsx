@@ -14,10 +14,12 @@ import {
   Info,
   Lock,
   Mail,
+  MailCheck,
+  RefreshCw,
   Phone,
   User,
 } from "lucide-react"
-import { signUpUser, signInUser, AuthResponse } from "@/lib/supabase/auth"
+import { signUpUser, signInUser, resendConfirmationEmail, AuthResponse } from "@/lib/supabase/auth"
 import type { UserRole } from "@/types/database"
 
 interface AccountCardProps {
@@ -47,6 +49,8 @@ export function AccountCard({
   const [error, setError] = useState("")
   const [infoNotice, setInfoNotice] = useState("")
   const [authResult, setAuthResult] = useState<AuthResponse | null>(null)
+  const [isResending, setIsResending] = useState(false)
+  const [resendStatus, setResendStatus] = useState<string | null>(null)
 
   const handleRoleChange = (newRole: UserRole) => {
     setRole(newRole)
@@ -59,6 +63,20 @@ export function AccountCard({
     setError("")
     setInfoNotice("")
     setAuthResult(null)
+    setResendStatus(null)
+  }
+
+  const handleResendConfirmation = async () => {
+    const targetEmail = authResult?.user?.email || email.trim()
+    if (!targetEmail) return
+    setIsResending(true)
+    setResendStatus(null)
+    try {
+      const res = await resendConfirmationEmail(targetEmail)
+      setResendStatus(res.message)
+    } finally {
+      setIsResending(false)
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -241,8 +259,30 @@ export function AccountCard({
         </div>
       </div>
 
+      {/* EMAIL CONFIRMATION NOTICE IN REGISTER NOW AREA */}
+      {authMode === "signup" && !authResult?.success && (
+        <div className="mb-4 p-3.5 rounded-2xl bg-gradient-to-r from-blue-50/90 to-indigo-50/80 border border-blue-200/90 text-blue-950 text-xs shadow-xs">
+          <div className="flex items-start gap-2.5">
+            <div className="p-1.5 rounded-xl bg-[#1f6fe5] text-white shrink-0 mt-0.5 shadow-xs">
+              <Mail className="w-3.5 h-3.5" />
+            </div>
+            <div className="space-y-1">
+              <p className="font-bold text-[#10233f] text-xs flex items-center gap-1.5">
+                <span>Email Confirmation Required</span>
+                <span className="text-[10px] font-semibold bg-blue-100 text-[#1f6fe5] px-1.5 py-0.5 rounded-full">
+                  Important
+                </span>
+              </p>
+              <p className="text-[11px] text-slate-600 leading-relaxed">
+                After you submit your registration, <strong className="text-[#10233f] font-semibold">you must check your mail inbox to confirm your account</strong> before you can sign in properly. A verification link will be sent to your email.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* PG OWNER NOTICE */}
-      {isPgOwner && authMode === "signup" && (
+      {isPgOwner && authMode === "signup" && !authResult?.success && (
         <div className="mb-4 p-3 rounded-2xl bg-amber-50 border border-amber-200/80 text-amber-900 text-xs flex items-start gap-2.5">
           <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
           <div className="leading-relaxed">
@@ -253,37 +293,104 @@ export function AccountCard({
 
       {/* SUCCESS / FEEDBACK BANNER */}
       {authResult?.success && (
-        <div className="space-y-4 mb-4">
-          <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-start gap-3">
-            <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
-            <div className="space-y-1">
-              <p className="text-xs font-bold text-emerald-900">Success</p>
-              <p className="text-xs text-emerald-800 leading-relaxed">
-                {authResult.message}
-              </p>
+        authResult.requiresEmailConfirmation ? (
+          <div className="space-y-4 mb-4 p-6 rounded-3xl bg-gradient-to-b from-blue-50/90 to-indigo-50/50 border border-blue-200 text-center shadow-xs animate-fadeIn">
+            <div className="w-14 h-14 rounded-2xl bg-[#1f6fe5] text-white flex items-center justify-center mx-auto shadow-md shadow-blue-500/25">
+              <MailCheck className="w-7 h-7" />
             </div>
-          </div>
+            <div className="space-y-1.5">
+              <h3 className="text-lg font-bold text-[#10233f]">
+                Check Your Mail to Confirm
+              </h3>
+              <p className="text-xs text-slate-600">
+                We have sent an account activation link to:
+              </p>
+              <div className="inline-block px-3.5 py-1 bg-white rounded-full border border-blue-200 text-xs font-bold text-[#1f6fe5] break-all shadow-2xs">
+                {authResult.user?.email || email}
+              </div>
+            </div>
 
-          {isPgOwner ? (
-            <Link
-              href="/pg-owner/submit"
-              onClick={onDone}
-              className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-[#10233f] text-white text-xs font-bold hover:bg-[#1f6fe5] transition-colors"
-            >
-              <span>Go to PG Listing Submission</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          ) : (
-            <button
-              type="button"
-              onClick={onDone}
-              className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-[#10233f] text-white text-xs font-bold hover:bg-[#1f6fe5] transition-colors cursor-pointer"
-            >
-              <span>Continue to LOCANO</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          )}
-        </div>
+            <div className="p-3.5 rounded-2xl bg-white/95 border border-blue-100 text-left text-xs space-y-2">
+              <p className="font-bold text-[#10233f] text-[11px] uppercase tracking-wider">
+                Follow These Steps to Sign In:
+              </p>
+              <ol className="list-decimal list-inside space-y-1.5 text-slate-600 text-[11px] leading-relaxed">
+                <li>Open your email inbox (and check <span className="font-medium text-slate-800">Spam or Promotions</span> if you don&apos;t see it within 2 minutes).</li>
+                <li>Click the <span className="font-semibold text-[#1f6fe5]">“Confirm your email”</span> verification link.</li>
+                <li>Once confirmed, return here and sign in with your email and password.</li>
+              </ol>
+            </div>
+
+            {resendStatus && (
+              <div className="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 font-medium">
+                {resendStatus}
+              </div>
+            )}
+
+            <div className="space-y-2 pt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  setAuthMode("signin")
+                  setAuthResult(null)
+                  setResendStatus(null)
+                }}
+                className="w-full py-3 rounded-full bg-[#10233f] text-white text-xs font-bold hover:bg-[#1f6fe5] transition-colors shadow-sm cursor-pointer flex items-center justify-center gap-2"
+              >
+                <span>I Confirmed My Email — Go to Sign In</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+
+              <button
+                type="button"
+                disabled={isResending}
+                onClick={handleResendConfirmation}
+                className="w-full py-2.5 rounded-full bg-white border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 text-xs font-semibold transition-colors cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-50"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${isResending ? "animate-spin" : ""}`} />
+                <span>{isResending ? "Resending Link..." : "Didn't receive email? Resend link"}</span>
+              </button>
+            </div>
+
+            {isPgOwner && (
+              <p className="text-[11px] text-amber-700 bg-amber-50 p-2.5 rounded-xl border border-amber-200 text-left">
+                <span className="font-bold">Note for PG Owners:</span> A Locano admin will also contact you manually for property verification and onboarding.
+              </p>
+            )}
+          </div>
+        ) : (
+          <div className="space-y-4 mb-4">
+            <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-start gap-3">
+              <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+              <div className="space-y-1">
+                <p className="text-xs font-bold text-emerald-900">Success</p>
+                <p className="text-xs text-emerald-800 leading-relaxed">
+                  {authResult.message}
+                </p>
+              </div>
+            </div>
+
+            {isPgOwner ? (
+              <Link
+                href="/pg-owner/submit"
+                onClick={onDone}
+                className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-[#10233f] text-white text-xs font-bold hover:bg-[#1f6fe5] transition-colors"
+              >
+                <span>Go to PG Listing Submission</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            ) : (
+              <button
+                type="button"
+                onClick={onDone}
+                className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-[#10233f] text-white text-xs font-bold hover:bg-[#1f6fe5] transition-colors cursor-pointer"
+              >
+                <span>Continue to LOCANO</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        )
       )}
 
       {/* CONFIGURATION / DEVELOPMENT NOTICE (NO FAKE SUCCESS) */}
@@ -357,6 +464,12 @@ export function AccountCard({
                 className="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-slate-200 text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#1f6fe5]"
               />
             </div>
+            {authMode === "signup" && (
+              <p className="mt-1.5 text-[11px] text-slate-500 flex items-center gap-1.5">
+                <Info className="w-3.5 h-3.5 text-[#1f6fe5] shrink-0" />
+                <span>We&apos;ll send a verification link to this email to activate your account.</span>
+              </p>
+            )}
           </div>
 
           {/* Phone Number (Sign Up only) */}
@@ -424,6 +537,16 @@ export function AccountCard({
               />
             </div>
           </div>
+
+          {/* Email Confirmation Reminder before submitting */}
+          {authMode === "signup" && (
+            <div className="p-2.5 rounded-xl bg-blue-50/70 border border-blue-100 text-[11px] text-slate-600 flex items-center gap-2">
+              <Mail className="w-3.5 h-3.5 text-[#1f6fe5] shrink-0" />
+              <span>
+                You will need to verify the email sent to your inbox before you can sign in.
+              </span>
+            </div>
+          )}
 
           {/* Submit Button */}
           <button

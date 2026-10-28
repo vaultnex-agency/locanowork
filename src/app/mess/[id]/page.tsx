@@ -3,13 +3,11 @@ import Link from "next/link"
 import Image from "next/image"
 import { notFound } from "next/navigation"
 import { fetchMessById } from "@/lib/services/mess"
-import { DEMO_DISCLAIMER_TEXT } from "@/data/mock-messes"
 import { EnquiryPreviewButton } from "@/components/EnquiryPreviewButton"
 import {
   ArrowLeft,
   MapPin,
   CheckCircle2,
-  AlertCircle,
   Utensils,
   Clock,
   Sparkles,
@@ -61,15 +59,6 @@ export default async function MessDetailPage({ params }: MessPageProps) {
           </Link>
         </div>
 
-        {/* DEMO NOTICE BANNER */}
-        {listing.isDemo && (
-          <div className="mb-6 p-4 rounded-2xl bg-amber-50 border border-amber-200/80 text-amber-900 text-xs sm:text-sm flex items-start gap-3 locano-card shadow-xs">
-            <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-            <div className="leading-relaxed">
-              <span className="font-bold">Preview Notice:</span> {DEMO_DISCLAIMER_TEXT}
-            </div>
-          </div>
-        )}
 
         {/* MAIN PROVIDER HEADER CARD */}
         <div className="p-6 sm:p-8 bg-white rounded-3xl border border-slate-100 locano-card mb-8">
@@ -87,16 +76,10 @@ export default async function MessDetailPage({ params }: MessPageProps) {
                 <span className="text-xs font-semibold px-3 py-1 rounded-full bg-orange-50 text-[#ea580c] border border-orange-200/60">
                   {listing.cuisine}
                 </span>
-                {listing.isDemo ? (
-                  <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-500">
-                    Demo Listing
-                  </span>
-                ) : (
-                  <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
-                    <ShieldCheck className="w-3.5 h-3.5" />
-                    <span>Verified Mess</span>
-                  </span>
-                )}
+                <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  <span>Verified Mess</span>
+                </span>
               </div>
               <h1 className="text-2xl sm:text-4xl font-extrabold text-[#10233f] tracking-tight">
                 {listing.name}
@@ -361,12 +344,8 @@ export default async function MessDetailPage({ params }: MessPageProps) {
                   listingName={listing.name}
                   listingId={listing.id}
                   category="mess"
-                  buttonText="Enquire for Mess Pass (Preview Only)"
+                  buttonText="Enquire for Mess Pass"
                 />
-              </div>
-
-              <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 text-[11px] text-slate-500 leading-relaxed">
-                <span className="font-semibold text-slate-700">Notice:</span> Sample mess listing. Live mess manager contact and online pass purchase will be enabled when full backend integration launches.
               </div>
             </div>
 

@@ -1,5 +1,4 @@
 import { getSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase/client"
-import { mockMesses } from "@/data/mock-messes"
 import type { MessListing, DietaryType, ServiceType, MealType, MealPlan } from "@/types/mess"
 import type { Database } from "@/types/database"
 
@@ -45,9 +44,7 @@ function mapRowToMess(row: MessRow): MessListing {
 export async function fetchMesses(
   params: FetchMessesParams = {}
 ): Promise<{ listings: MessListing[]; isFromDatabase: boolean; error?: string }> {
-  const isProd = process.env.NODE_ENV === "production"
-  // In production, demo data is strictly disabled by default
-  const { search, dietary, service, includeDemo = !isProd } = params
+  const { search, dietary, service } = params
 
   if (isSupabaseConfigured()) {
     try {
@@ -56,7 +53,8 @@ export async function fetchMesses(
         let query = supabase
           .from("mess_listings")
           .select("*")
-          .in("status", ["published"])
+          .eq("status", "published")
+          .eq("is_demo", false)
 
         if (dietary && dietary !== "All") {
           query = query.eq("dietary", dietary as DietaryType)
@@ -64,18 +62,12 @@ export async function fetchMesses(
         if (service && service !== "All") {
           query = query.eq("service_type", service as ServiceType)
         }
-        // In production or when includeDemo is false, never query demo records
-        if (isProd || !includeDemo) {
-          query = query.eq("is_demo", false)
-        }
 
         const { data, error } = await query.order("created_at", { ascending: false })
 
         if (error) {
           console.error("Supabase mess query error:", error.message)
-          if (isProd) {
-            return { listings: [], isFromDatabase: true, error: error.message }
-          }
+          return { listings: [], isFromDatabase: true, error: error.message }
         } else if (data) {
           let results = data.map(mapRowToMess)
           if (search) {
@@ -87,41 +79,16 @@ export async function fetchMesses(
                 item.nearestLandmark.toLowerCase().includes(q)
             )
           }
-          // When database is live, return its exact results (even if empty); do not leak mock data
           return { listings: results, isFromDatabase: true }
         }
       }
     } catch (err) {
       console.warn("Supabase mess query error:", err)
-      if (isProd) {
-        return { listings: [], isFromDatabase: true }
-      }
+      return { listings: [], isFromDatabase: true }
     }
   }
 
-  // Development-only fallback preview when Supabase credentials are not configured
-  if (isProd || !includeDemo) {
-    return { listings: [], isFromDatabase: false }
-  }
-
-  let demoListings = [...mockMesses]
-  if (dietary && dietary !== "All") {
-    demoListings = demoListings.filter((i) => i.dietary === dietary)
-  }
-  if (service && service !== "All") {
-    demoListings = demoListings.filter((i) => i.serviceType === service)
-  }
-  if (search) {
-    const q = search.trim().toLowerCase()
-    demoListings = demoListings.filter(
-      (item) =>
-        item.name.toLowerCase().includes(q) ||
-        item.area.toLowerCase().includes(q) ||
-        item.nearestLandmark.toLowerCase().includes(q)
-    )
-  }
-
-  return { listings: demoListings, isFromDatabase: false }
+  return { listings: [], isFromDatabase: false }
 }
 
 export async function fetchMessById(id: string): Promise<MessListing | null> {
@@ -133,17 +100,17 @@ export async function fetchMessById(id: string): Promise<MessListing | null> {
           .from("mess_listings")
           .select("*")
           .eq("id", id)
+          .eq("is_demo", false)
           .single()
 
         if (!error && data) {
           return mapRowToMess(data)
         }
       }
-    } catch {
-      // fallback to mock
+    } catch (err) {
+      console.warn("Error fetching mess by id:", err)
     }
   }
 
-  const mock = mockMesses.find((i) => i.id === id)
-  return mock ? { ...mock, isDemo: true } : null
+  return null
 }

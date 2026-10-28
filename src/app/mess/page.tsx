@@ -7,7 +7,6 @@ import { useSearchParams } from "next/navigation"
 import { useModal } from "@/context/ModalContext"
 import { ScrollReveal } from "@/components/ScrollReveal"
 import { fetchMesses } from "@/lib/services/mess"
-import { DEMO_DISCLAIMER_TEXT } from "@/data/mock-messes"
 import type { DietaryType, ServiceType, MessListing } from "@/types/mess"
 import {
   Utensils,
@@ -18,7 +17,6 @@ import {
   Search,
   X,
   RotateCcw,
-  ShieldCheck,
   ChevronDown,
   Heart,
   Truck,
@@ -98,7 +96,6 @@ function MessListingContent() {
         dietary: dietaryFilter,
         service: serviceFilter,
         search: locationQuery,
-        includeDemo: true, // Graceful development preview fallback
       })
       setRawListings(res.listings)
     } catch {
@@ -126,7 +123,6 @@ function MessListingContent() {
     return result
   }, [rawListings, sortBy])
 
-  const hasDemoListings = rawListings.some((l) => l.isDemo)
 
   const getServiceLabel = (service: ServiceType) => {
     if (service === "Dine-in Mess") return "Dine-in"
@@ -334,15 +330,7 @@ function MessListingContent() {
           </button>
         </div>
 
-        {/* DEMO NOTICE BANNER IF APPLICABLE */}
-        {hasDemoListings && (
-          <div className="mt-6 p-4 rounded-2xl bg-amber-50/90 border border-amber-200/80 text-amber-900 text-xs sm:text-sm flex items-start gap-3 shadow-2xs">
-            <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-            <div className="leading-relaxed">
-              <span className="font-bold">Development Preview Notice:</span> {DEMO_DISCLAIMER_TEXT}
-            </div>
-          </div>
-        )}
+
 
         {/* 4. LISTINGS SECTION HEADER WITH SORT */}
         <div className="mt-10 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
