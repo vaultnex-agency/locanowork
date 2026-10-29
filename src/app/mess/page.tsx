@@ -8,6 +8,7 @@ import { useModal } from "@/context/ModalContext"
 import { ScrollReveal } from "@/components/ScrollReveal"
 import { CustomDropdown } from "@/components/CustomDropdown"
 import { LocationSearchInput } from "@/components/LocationSearchInput"
+import { ListingCardImage } from "@/components/ListingCardImage"
 import { fetchMesses } from "@/lib/services/mess"
 import type { DietaryType, ServiceType, MessListing } from "@/types/mess"
 import {
@@ -388,11 +389,15 @@ function MessListingContent() {
                   ? "/mess-tiffin.jpg"
                   : "/mess-dining-spread.jpg"
 
+              const rawImage =
+                (Array.isArray(listing.images) && listing.images.length > 0 ? listing.images[0] : null) ||
+                listing.sampleImage
+
               const imageUrl =
-                listing.sampleImage &&
-                listing.sampleImage !== "/mess-thali.jpg" &&
-                listing.sampleImage !== "/mess-tiffin.jpg"
-                  ? listing.sampleImage
+                rawImage &&
+                rawImage !== "/mess-thali.jpg" &&
+                rawImage !== "/mess-tiffin.jpg"
+                  ? rawImage
                   : photoFallback
 
               const isFavorite = favorites.has(listing.id)
@@ -411,11 +416,11 @@ function MessListingContent() {
                   >
                     {/* CARD IMAGE CONTAINER */}
                     <div className="relative h-48 sm:h-52 w-full overflow-hidden bg-slate-100">
-                      <Image
+                      <ListingCardImage
                         src={imageUrl}
+                        fallbackSrc={photoFallback}
                         alt={listing.name}
                         fill
-                        unoptimized={imageUrl.startsWith("http")}
                         className="object-cover transition-transform duration-500 ease-out md:group-hover:scale-[1.03]"
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       />

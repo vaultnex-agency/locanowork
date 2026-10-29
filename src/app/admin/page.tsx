@@ -8,6 +8,7 @@ import {
   Eye, EyeOff, LayoutDashboard, Clock, ChevronRight,
   AlertCircle, RefreshCw, ShieldCheck, LogOut, Loader2,
   BadgeCheck, Ban, MessageSquare, UserPlus, LogIn, Home,
+  Store, Phone,
 } from "lucide-react"
 import { getSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase/client"
 
@@ -15,6 +16,7 @@ import { getSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase/c
 type NotifType =
   | "signup" | "login" | "listing_submitted"
   | "listing_approved" | "listing_rejected" | "enquiry_created"
+  | "vendor_application"
 
 interface AdminNotif {
   id: string
@@ -43,7 +45,27 @@ interface PendingListing {
   category: "accommodation" | "mess"
 }
 
-type Section = "overview" | "notifications" | "listings"
+export interface AdminVendorApp {
+  id: string
+  user_id: string
+  vendor_type: "pg_vendor" | "food_mess_vendor"
+  status: "pending" | "approved" | "rejected"
+  business_name: string
+  business_phone?: string
+  business_address?: string
+  pg_property_name?: string | null
+  pg_area?: string | null
+  pg_gender_preference?: string | null
+  pg_approximate_rent?: number | null
+  mess_name?: string | null
+  mess_area?: string | null
+  mess_cuisine?: string | null
+  mess_dietary_type?: string | null
+  mess_approximate_price?: number | null
+  created_at: string
+}
+
+type Section = "overview" | "vendors" | "notifications" | "listings"
 
 // ─── Notification config ──────────────────────────────────────────────────────
 const NOTIF_CFG: Record<NotifType, { label: string; pill: string; Icon: React.ElementType }> = {
@@ -53,10 +75,11 @@ const NOTIF_CFG: Record<NotifType, { label: string; pill: string; Icon: React.El
   listing_approved:  { label: "Approved",  pill: "bg-emerald-50 text-emerald-700 border-emerald-200", Icon: BadgeCheck },
   listing_rejected:  { label: "Rejected",  pill: "bg-red-50 text-red-700 border-red-200",            Icon: Ban },
   enquiry_created:   { label: "Enquiry",   pill: "bg-violet-50 text-violet-700 border-violet-200",   Icon: MessageSquare },
+  vendor_application:{ label: "Vendor App",pill: "bg-purple-50 text-purple-700 border-purple-200",   Icon: Store },
 }
 
 const FILTER_ORDER: Array<NotifType | "all"> = [
-  "all", "enquiry_created", "listing_submitted", "signup",
+  "all", "vendor_application", "enquiry_created", "listing_submitted", "signup",
   "login", "listing_approved", "listing_rejected",
 ]
 
@@ -68,6 +91,7 @@ export default function AdminPage() {
   const [section, setSection] = useState<Section>("overview")
   const [notifs, setNotifs] = useState<AdminNotif[]>([])
   const [listings, setListings] = useState<PendingListing[]>([])
+  const [vendorApps, setVendorApps] = useState<AdminVendorApp[]>([])
   const [loading, setLoading] = useState(false)
   const [actionId, setActionId] = useState<string | null>(null)
   const [notifFilter, setNotifFilter] = useState<NotifType | "all">("all")
@@ -82,10 +106,17 @@ export default function AdminPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.replace("/login"); return }
       const { data: profile } = await supabase
-        .from("profiles").select("role").eq("id", user.id).single()
-      if (profile?.role !== "admin") { router.replace("/"); return }
-      setAdminEmail(user.email ?? "")
-      setAuthState("ok")
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single()
+      if (profile?.role === "admin") {
+        setAdminEmail(user.email ?? "admin")
+        setAuthState("ok")
+        return
+      }
+      router.replace("/")
+      return
     }
     void checkAdminAuth()
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -97,7 +128,7 @@ export default function AdminPage() {
     if (!supabase) return
     setLoading(true)
 
-    const [{ data: nd }, { data: ad }, { data: md }] = await Promise.all([
+    const [{ data: nd }, { data: ad }, { data: md }, { data: vd }] = await Promise.all([
       supabase.from("admin_notifications").select("*")
         .order("created_at", { ascending: false }).limit(150),
       supabase.from("accommodation_listings")
@@ -108,9 +139,54 @@ export default function AdminPage() {
         .select("id,name,area,owner_id,created_at,monthly_price_from,dietary,service_type")
         .eq("status", "pending").eq("is_demo", false)
         .order("created_at", { ascending: false }),
+      supabase.from("vendor_applications")
+        .select("*")
+        .order("created_at", { ascending: false }),
     ])
 
     if (nd) setNotifs(nd as AdminNotif[])
+
+    let apps: AdminVendorApp[] = (vd as AdminVendorApp[]) || []
+    if (apps.length === 0) {
+      try {
+        const { data: vendorProfiles } = await supabase
+          .from("profiles")
+          .select("*")
+          .order("created_at", { ascending: false })
+
+        if (vendorProfiles && vendorProfiles.length > 0) {
+          const matched = vendorProfiles.filter((p) => {
+            const meta = (p.metadata as Record<string, unknown>) || {}
+            return p.role === "vendor" || Boolean(meta.vendor_type) || Boolean(meta.business_name)
+          })
+
+          apps = matched.map((p) => {
+            const meta = (p.metadata as Record<string, unknown>) || {}
+            const isFood = meta.vendor_type === "food_mess_vendor"
+            return {
+              id: p.id,
+              user_id: p.id,
+              vendor_type: isFood ? "food_mess_vendor" : "pg_vendor",
+              status: (meta.vendor_status as "pending" | "approved" | "rejected") || "pending",
+              business_name: (meta.business_name as string) || (meta.property_name as string) || p.full_name || "Vendor Business",
+              business_phone: p.phone || "",
+              business_address: (meta.business_address as string) || "",
+              pg_property_name: (meta.pg_property_name as string) || (meta.property_name as string) || null,
+              pg_area: (meta.pg_area as string) || null,
+              pg_gender_preference: (meta.pg_gender_preference as string) || "Co-ed",
+              pg_approximate_rent: (meta.pg_approximate_rent as number) || null,
+              mess_name: (meta.mess_name as string) || (meta.business_name as string) || null,
+              mess_area: (meta.mess_area as string) || null,
+              mess_cuisine: (meta.mess_cuisine as string) || (meta.mess_dietary_type as string) || null,
+              created_at: p.created_at,
+            }
+          })
+        }
+      } catch {
+        // Fallback catch
+      }
+    }
+    setVendorApps(apps)
 
     const combined: PendingListing[] = [
       ...(ad ?? []).map((l) => ({ ...l, category: "accommodation" as const })),
@@ -169,6 +245,37 @@ export default function AdminPage() {
     setActionId(null)
   }
 
+  async function handleVendorAction(id: string, status: "approved" | "rejected") {
+    setActionId(id)
+    const supabase = getSupabaseBrowserClient()
+    if (!supabase) { setActionId(null); return }
+
+    try {
+      await supabase
+        .from("vendor_applications")
+        .update({ status, reviewed_at: new Date().toISOString() })
+        .eq("id", id)
+
+      try {
+        await supabase
+          .from("profiles")
+          .update({
+            metadata: { vendor_status: status },
+          })
+          .eq("id", id)
+      } catch {
+        // Non-blocking if profiles table has different schema
+      }
+
+      setVendorApps((prev) =>
+        prev.map((app) => (app.id === id ? { ...app, status } : app))
+      )
+      await fetchData()
+    } finally {
+      setActionId(null)
+    }
+  }
+
   async function signOut() {
     const supabase = getSupabaseBrowserClient()
     if (supabase) await supabase.auth.signOut()
@@ -177,13 +284,15 @@ export default function AdminPage() {
 
   // ── Derived ──────────────────────────────────────────────────────────────────
   const unread = notifs.filter((n) => !n.read).length
+  const pendingVendors = vendorApps.filter((v) => v.status === "pending").length
   const enquiries = notifs.filter((n) => n.notification_type === "enquiry_created").length
   const filtered = notifFilter === "all" ? notifs : notifs.filter((n) => n.notification_type === notifFilter)
 
   const navItems: Array<{ id: Section; label: string; Icon: React.ElementType; badge?: number }> = [
     { id: "overview",      label: "Overview",        Icon: LayoutDashboard },
-    { id: "notifications", label: "Notifications",    Icon: Bell,      badge: unread },
-    { id: "listings",      label: "Pending Listings", Icon: Building2, badge: listings.length },
+    { id: "vendors",       label: "Vendor Apps",     Icon: Store,            badge: pendingVendors },
+    { id: "notifications", label: "Notifications",    Icon: Bell,             badge: unread },
+    { id: "listings",      label: "Pending Listings", Icon: Building2,        badge: listings.length },
   ]
 
   // ── Guard states ─────────────────────────────────────────────────────────────
@@ -332,20 +441,89 @@ export default function AdminPage() {
               {/* Stat cards */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
-                  { label: "Unread Alerts",      value: unread,          Icon: Bell,         bg: "bg-blue-50 border-blue-100",     icon: "text-[#1f6fe5]" },
-                  { label: "Pending Listings",    value: listings.length, Icon: Clock,        bg: "bg-amber-50 border-amber-100",   icon: "text-amber-600" },
-                  { label: "Total Enquiries",     value: enquiries,       Icon: MessageSquare, bg: "bg-violet-50 border-violet-100", icon: "text-violet-600" },
-                  { label: "All Notifications",   value: notifs.length,   Icon: Bell,         bg: "bg-emerald-50 border-emerald-100", icon: "text-emerald-600" },
-                ].map(({ label, value, Icon: SI, bg, icon }) => (
-                  <div key={label} className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
+                  { label: "Pending Vendors",    value: pendingVendors,   Icon: Store,        bg: "bg-purple-50 border-purple-100", icon: "text-purple-600", onClick: () => setSection("vendors") },
+                  { label: "Pending Listings",   value: listings.length, Icon: Clock,        bg: "bg-amber-50 border-amber-100",   icon: "text-amber-600", onClick: () => setSection("listings") },
+                  { label: "Unread Alerts",      value: unread,          Icon: Bell,         bg: "bg-blue-50 border-blue-100",     icon: "text-[#1f6fe5]", onClick: () => setSection("notifications") },
+                  { label: "Total Enquiries",    value: enquiries,       Icon: MessageSquare, bg: "bg-violet-50 border-violet-100", icon: "text-violet-600", onClick: () => setSection("notifications") },
+                ].map(({ label, value, Icon: SI, bg, icon, onClick }) => (
+                  <button key={label} onClick={onClick} className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm text-left hover:border-slate-300 transition-all cursor-pointer">
                     <div className={`w-10 h-10 rounded-xl border flex items-center justify-center mb-3 ${bg}`}>
                       <SI className={`w-5 h-5 ${icon}`} />
                     </div>
                     <div className="text-2xl font-extrabold text-[#10233f]">{value}</div>
                     <div className="text-xs text-slate-500 mt-0.5 font-medium">{label}</div>
-                  </div>
+                  </button>
                 ))}
               </div>
+
+              {/* Pending Vendor Applications preview on Overview */}
+              {pendingVendors > 0 && (
+                <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden p-5 space-y-4">
+                  <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                    <h2 className="text-sm font-bold text-[#10233f] flex items-center gap-2">
+                      <Store className="w-4 h-4 text-purple-600" />
+                      Pending Vendor Applications
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200">
+                        {pendingVendors} Review Needed
+                      </span>
+                    </h2>
+                    <button
+                      onClick={() => setSection("vendors")}
+                      className="text-xs text-[#1f6fe5] font-semibold flex items-center gap-1 hover:underline cursor-pointer"
+                    >
+                      View all ({vendorApps.length}) <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                  <div className="space-y-3">
+                    {vendorApps
+                      .filter((v) => v.status === "pending")
+                      .slice(0, 3)
+                      .map((app) => {
+                        const isPg = app.vendor_type === "pg_vendor"
+                        const isBusy = actionId === app.id
+                        return (
+                          <div
+                            key={app.id}
+                            className="p-4 rounded-xl border border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
+                          >
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-2">
+                                <span className="font-bold text-sm text-[#10233f]">{app.business_name}</span>
+                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${isPg ? "bg-purple-50 text-purple-700 border-purple-200" : "bg-amber-50 text-amber-700 border-amber-200"}`}>
+                                  {isPg ? "PG Vendor" : "Food / Mess Vendor"}
+                                </span>
+                              </div>
+                              <p className="text-xs text-slate-500">
+                                {isPg
+                                  ? `Property: ${app.pg_property_name || "N/A"} · Locality: ${app.pg_area || "N/A"} (${app.pg_gender_preference || "Co-ed"})`
+                                  : `Mess: ${app.mess_name || "N/A"} · Locality: ${app.mess_area || "N/A"} (${app.mess_cuisine || "Dietary"})`}
+                              </p>
+                              {app.business_phone && (
+                                <p className="text-[11px] text-slate-400 font-medium">Contact: {app.business_phone}</p>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0">
+                              <button
+                                onClick={() => handleVendorAction(app.id, "approved")}
+                                disabled={isBusy}
+                                className="px-4 py-1.5 rounded-full bg-emerald-500 text-white text-xs font-bold hover:bg-emerald-600 transition-colors disabled:opacity-50 cursor-pointer"
+                              >
+                                Approve
+                              </button>
+                              <button
+                                onClick={() => handleVendorAction(app.id, "rejected")}
+                                disabled={isBusy}
+                                className="px-4 py-1.5 rounded-full bg-white border border-red-200 text-red-600 text-xs font-bold hover:bg-red-50 transition-colors disabled:opacity-50 cursor-pointer"
+                              >
+                                Reject
+                              </button>
+                            </div>
+                          </div>
+                        )
+                      })}
+                  </div>
+                </div>
+              )}
 
               {/* Recent activity */}
               <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
@@ -502,6 +680,163 @@ export default function AdminPage() {
                   })}
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* ════ VENDOR APPLICATIONS ════ */}
+          {section === "vendors" && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h1 className="text-2xl font-extrabold text-[#10233f]">Vendor Applications</h1>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Review and authorize new PG and Food/Mess vendors. Approval is enforced server-side before vendors can submit listings.
+                  </p>
+                </div>
+                <button
+                  onClick={fetchData}
+                  disabled={loading}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-slate-200 bg-white text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-2xs disabled:opacity-50"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
+                  <span>Refresh</span>
+                </button>
+              </div>
+
+              {loading ? (
+                <div className="bg-white rounded-2xl border border-slate-100 shadow-sm py-16 flex justify-center">
+                  <Loader2 className="w-6 h-6 text-slate-300 animate-spin" />
+                </div>
+              ) : vendorApps.length === 0 ? (
+                <div className="bg-white rounded-2xl border border-slate-100 shadow-sm py-16 text-center">
+                  <CheckCircle2 className="w-10 h-10 text-emerald-400 mx-auto mb-3" />
+                  <p className="text-sm font-semibold text-slate-600">No applications yet!</p>
+                  <p className="text-xs text-slate-400 mt-1">Vendor registrations will appear here for admin review.</p>
+                </div>
+              ) : (
+                vendorApps.map((app) => {
+                  const isPg = app.vendor_type === "pg_vendor"
+                  const isPending = app.status === "pending"
+                  const isApproved = app.status === "approved"
+                  const isBusy = actionId === app.id
+
+                  return (
+                    <div key={app.id} className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 sm:p-6 space-y-4">
+                      <div className="flex items-start justify-between gap-4 flex-wrap">
+                        <div className="flex items-start gap-4">
+                          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border ${
+                            isPg ? "bg-purple-50 text-purple-600 border-purple-100" : "bg-amber-50 text-amber-600 border-amber-100"
+                          }`}>
+                            {isPg ? <Building2 className="w-6 h-6" /> : <Utensils className="w-6 h-6" />}
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2 flex-wrap mb-1">
+                              <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${
+                                isPg ? "bg-purple-50 text-purple-700 border-purple-200" : "bg-amber-50 text-amber-700 border-amber-200"
+                              }`}>
+                                {isPg ? "PG Vendor" : "Food / Mess Vendor"}
+                              </span>
+                              <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border uppercase ${
+                                isPending
+                                  ? "bg-amber-50 text-amber-700 border-amber-200"
+                                  : isApproved
+                                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                  : "bg-red-50 text-red-700 border-red-200"
+                              }`}>
+                                {app.status}
+                              </span>
+                            </div>
+                            <h3 className="text-base font-bold text-[#10233f]">{app.business_name}</h3>
+                            <div className="flex items-center gap-3 mt-1.5 text-xs text-slate-500 flex-wrap">
+                              {app.business_phone && (
+                                <span className="flex items-center gap-1 font-medium text-slate-700">
+                                  <Phone className="w-3.5 h-3.5 text-slate-400" />
+                                  {app.business_phone}
+                                </span>
+                              )}
+                              <span>·</span>
+                              <span>
+                                Registered {new Date(app.created_at).toLocaleDateString("en-IN", {
+                                  day: "2-digit",
+                                  month: "short",
+                                  year: "numeric",
+                                })}
+                              </span>
+                            </div>
+                            <p className="text-[10px] text-slate-400 mt-1 font-mono">App ID: {app.id}</p>
+                          </div>
+                        </div>
+
+                        {/* Action buttons */}
+                        <div className="flex items-center gap-3 sm:flex-col sm:items-stretch">
+                          {app.status !== "approved" && (
+                            <button
+                              onClick={() => handleVendorAction(app.id, "approved")}
+                              disabled={isBusy}
+                              className="flex items-center justify-center gap-2 px-5 py-2 rounded-full bg-emerald-500 text-white text-xs font-bold hover:bg-emerald-600 transition-colors shadow-sm shadow-emerald-500/20 disabled:opacity-50 whitespace-nowrap cursor-pointer"
+                            >
+                              {isBusy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
+                              Approve Vendor
+                            </button>
+                          )}
+                          {app.status !== "rejected" && (
+                            <button
+                              onClick={() => handleVendorAction(app.id, "rejected")}
+                              disabled={isBusy}
+                              className="flex items-center justify-center gap-2 px-5 py-2 rounded-full bg-white border border-red-200 text-red-600 text-xs font-bold hover:bg-red-50 transition-colors disabled:opacity-50 whitespace-nowrap cursor-pointer"
+                            >
+                              <XCircle className="w-3.5 h-3.5" /> Reject
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Submitted PG/Mess Details Grid */}
+                      <div className="bg-slate-50 rounded-xl p-3.5 border border-slate-100 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                        {isPg ? (
+                          <>
+                            <div>
+                              <span className="text-slate-400 text-[10px] uppercase font-bold block">Property Name</span>
+                              <span className="text-[#10233f] font-semibold">{app.pg_property_name || "—"}</span>
+                            </div>
+                            <div>
+                              <span className="text-slate-400 text-[10px] uppercase font-bold block">Area / Locality</span>
+                              <span className="text-[#10233f] font-semibold">{app.pg_area || "—"}</span>
+                            </div>
+                            <div>
+                              <span className="text-slate-400 text-[10px] uppercase font-bold block">Gender Preference</span>
+                              <span className="text-[#10233f] font-semibold">{app.pg_gender_preference || "—"}</span>
+                            </div>
+                            <div>
+                              <span className="text-slate-400 text-[10px] uppercase font-bold block">Approx Rent</span>
+                              <span className="text-[#10233f] font-semibold">{app.pg_approximate_rent ? `₹${app.pg_approximate_rent}/mo` : "—"}</span>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <div>
+                              <span className="text-slate-400 text-[10px] uppercase font-bold block">Mess Name</span>
+                              <span className="text-[#10233f] font-semibold">{app.mess_name || "—"}</span>
+                            </div>
+                            <div>
+                              <span className="text-slate-400 text-[10px] uppercase font-bold block">Area / Locality</span>
+                              <span className="text-[#10233f] font-semibold">{app.mess_area || "—"}</span>
+                            </div>
+                            <div>
+                              <span className="text-slate-400 text-[10px] uppercase font-bold block">Cuisine & Diet</span>
+                              <span className="text-[#10233f] font-semibold">{app.mess_cuisine || app.mess_dietary_type || "—"}</span>
+                            </div>
+                            <div>
+                              <span className="text-slate-400 text-[10px] uppercase font-bold block">Approx Price</span>
+                              <span className="text-[#10233f] font-semibold">{app.mess_approximate_price ? `₹${app.mess_approximate_price}/mo` : "—"}</span>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })
+              )}
             </div>
           )}
 

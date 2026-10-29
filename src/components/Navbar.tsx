@@ -16,6 +16,7 @@ import {
   LogOut,
   Building2,
   GraduationCap,
+  Store,
   Home,
   Utensils,
   Bus,
@@ -177,6 +178,7 @@ export function Navbar() {
   const activeCls = "text-[#1f6fe5] bg-[#e0efff] font-semibold"
   const inactiveCls = "text-slate-700 hover:text-[#1f6fe5] hover:bg-slate-100/60 font-medium"
 
+  const isVendor = authUser?.role === "vendor"
   const isPgOwner = authUser?.role === "pg_owner"
 
   return (
@@ -237,7 +239,7 @@ export function Navbar() {
               {/* Circular Initial Badge */}
               <div
                 className={`size-7 sm:size-7 rounded-full flex items-center justify-center font-bold text-xs text-white shrink-0 shadow-xs ${
-                  isPgOwner ? "bg-[#10233f]" : "bg-[#1f6fe5]"
+                  isVendor ? "bg-purple-600" : isPgOwner ? "bg-[#10233f]" : "bg-[#1f6fe5]"
                 }`}
               >
                 {authUser.initial}
@@ -264,7 +266,7 @@ export function Navbar() {
                   <div className="flex items-center gap-2 mb-1.5">
                     <div
                       className={`size-8 rounded-full flex items-center justify-center font-bold text-xs text-white shrink-0 ${
-                        isPgOwner ? "bg-[#10233f]" : "bg-[#1f6fe5]"
+                        isVendor ? "bg-purple-600" : isPgOwner ? "bg-[#10233f]" : "bg-[#1f6fe5]"
                       }`}
                     >
                       {authUser.initial}
@@ -281,7 +283,12 @@ export function Navbar() {
 
                   {/* Role Badge */}
                   <div className="mt-2">
-                    {isPgOwner ? (
+                    {isVendor ? (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200">
+                        <Store className="size-3 text-purple-600" />
+                        <span>Vendor Account</span>
+                      </span>
+                    ) : isPgOwner ? (
                       <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
                         <Building2 className="size-3 text-amber-600" />
                         <span>PG Owner Account</span>

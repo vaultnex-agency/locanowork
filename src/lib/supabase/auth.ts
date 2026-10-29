@@ -1,5 +1,5 @@
 import { getSupabaseBrowserClient, isSupabaseConfigured } from "./client"
-import type { UserRole } from "@/types/database"
+import type { UserRole, VendorType } from "@/types/database"
 
 export interface SignUpData {
   email: string
@@ -7,7 +7,15 @@ export interface SignUpData {
   fullName: string
   phone: string
   role: UserRole
+  vendorType?: VendorType
   propertyName?: string
+  businessName?: string
+  pgPropertyName?: string
+  pgArea?: string
+  pgGender?: string
+  messName?: string
+  messArea?: string
+  messCuisine?: string
 }
 
 export interface SignInData {
@@ -46,6 +54,43 @@ export async function signUpUser(data: SignUpData): Promise<AuthResponse> {
   }
 
   try {
+    // 1. Enforce server-side rate limit & registration through API route
+    if (typeof window !== "undefined") {
+      try {
+        const res = await fetch("/api/auth/signup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        })
+
+        if (res.status === 429) {
+          const errJson = await res.json().catch(() => ({}))
+          return {
+            success: false,
+            message: errJson.error || "Too many signup attempts. Please try again later.",
+          }
+        }
+
+        if (!res.ok) {
+          const errJson = await res.json().catch(() => ({}))
+          return {
+            success: false,
+            message: errJson.error || "Registration failed.",
+          }
+        }
+
+        const json = await res.json()
+        return {
+          success: true,
+          requiresEmailConfirmation: true,
+          user: json.user,
+          message: json.message,
+        }
+      } catch {
+        // Fallback to browser client below
+      }
+    }
+
     const redirectUrl =
       typeof window !== "undefined"
         ? `${window.location.origin}/auth/confirmed`
@@ -60,7 +105,15 @@ export async function signUpUser(data: SignUpData): Promise<AuthResponse> {
           full_name: data.fullName,
           phone: data.phone,
           role: data.role,
-          property_name: data.propertyName || null,
+          vendor_type: data.vendorType || null,
+          property_name: data.pgPropertyName || data.propertyName || data.messName || null,
+          business_name: data.businessName || data.propertyName || null,
+          pg_property_name: data.pgPropertyName || data.propertyName || null,
+          pg_area: data.pgArea || null,
+          pg_gender_preference: data.pgGender || "Co-ed",
+          mess_name: data.messName || data.businessName || null,
+          mess_area: data.messArea || null,
+          mess_cuisine: data.messCuisine || null,
         },
       },
     })
@@ -84,7 +137,9 @@ export async function signUpUser(data: SignUpData): Promise<AuthResponse> {
         role: data.role,
       },
       message:
-        data.role === "pg_owner"
+        data.role === "vendor"
+          ? `Vendor account registered! Please check your email to confirm your account. Your ${data.vendorType === 'food_mess_vendor' ? 'Food/Mess' : 'PG'} vendor application will be reviewed by a Locano administrator.`
+          : data.role === "pg_owner"
           ? "PG Owner account registered! Please check your email to confirm your account. A Locano administrator will also contact you manually for onboarding."
           : `Registration successful! We have sent a confirmation link to ${data.email}. You must check your email and click the confirmation link to activate your account before you can sign in.`,
     }
@@ -151,6 +206,27 @@ export async function signInUser(data: SignInData): Promise<AuthResponse> {
   }
 
   try {
+    // 1. Enforce server-side rate limit through API route
+    if (typeof window !== "undefined") {
+      try {
+        const rateCheck = await fetch("/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: data.email, password: data.password }),
+        })
+
+        if (rateCheck.status === 429) {
+          const errJson = await rateCheck.json().catch(() => ({}))
+          return {
+            success: false,
+            message: errJson.error || "Too many sign-in attempts. Please try again later.",
+          }
+        }
+      } catch {
+        // Fallback to browser client below
+      }
+    }
+
     const { data: authResult, error } = await supabase.auth.signInWithPassword({
       email: data.email,
       password: data.password,

@@ -5,7 +5,7 @@ import { ArrowLeft } from "lucide-react"
 
 export const metadata: Metadata = {
   title: "Create Account",
-  description: "Create a Student or PG Owner account on LOCANO.",
+  description: "Create a Student or Vendor account on LOCANO.",
 }
 
 export default function SignupPage() {

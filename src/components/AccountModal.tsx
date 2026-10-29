@@ -2,7 +2,6 @@
 
 import React, { useState } from "react"
 import { useModal } from "@/context/ModalContext"
-import Link from "next/link"
 import {
   X,
   CheckCircle2,
@@ -11,6 +10,7 @@ import {
   ShieldCheck,
   GraduationCap,
   Building2,
+  Utensils,
   Info,
   Lock,
   Mail,
@@ -18,13 +18,14 @@ import {
   RefreshCw,
   Phone,
   User,
+  Store,
 } from "lucide-react"
 import { signUpUser, signInUser, resendConfirmationEmail, AuthResponse } from "@/lib/supabase/auth"
-import type { UserRole } from "@/types/database"
+import type { UserRole, VendorType } from "@/types/database"
 
 interface AccountCardProps {
   initialMode?: "signin" | "signup"
-  initialRole?: "student" | "pg_owner"
+  initialRole?: "student" | "vendor"
   onDone?: () => void
 }
 
@@ -35,6 +36,7 @@ export function AccountCard({
 }: AccountCardProps) {
   const [authMode, setAuthMode] = useState<"signin" | "signup">(initialMode)
   const [role, setRole] = useState<UserRole>(initialRole)
+  const [vendorType, setVendorType] = useState<VendorType>("pg_vendor")
 
   // Form Fields
   const [fullName, setFullName] = useState("")
@@ -42,7 +44,17 @@ export function AccountCard({
   const [countryCode, setCountryCode] = useState("+91")
   const [phone, setPhone] = useState("")
   const [password, setPassword] = useState("")
-  const [propertyName, setPropertyName] = useState("")
+  const [businessName, setBusinessName] = useState("")
+
+  // PG Vendor fields
+  const [pgPropertyName, setPgPropertyName] = useState("")
+  const [pgArea, setPgArea] = useState("")
+  const [pgGender, setPgGender] = useState("Boys")
+
+  // Food/Mess Vendor fields
+  const [messName, setMessName] = useState("")
+  const [messArea, setMessArea] = useState("")
+  const [messCuisine, setMessCuisine] = useState("")
 
   // State
   const [isLoading, setIsLoading] = useState(false)
@@ -119,6 +131,14 @@ export function AccountCard({
         setError("Please enter a valid phone number.")
         return
       }
+
+      // Vendor-specific validation
+      if (role === "vendor") {
+        if (!businessName.trim()) {
+          setError("Please enter your business name.")
+          return
+        }
+      }
     }
 
     setIsLoading(true)
@@ -132,7 +152,15 @@ export function AccountCard({
           fullName: fullName.trim(),
           phone: fullPhoneNumber,
           role,
-          propertyName: role === "pg_owner" ? propertyName.trim() : undefined,
+          vendorType: role === "vendor" ? vendorType : undefined,
+          businessName: role === "vendor" ? businessName.trim() : undefined,
+          propertyName: role === "vendor" ? (isPgVendor ? pgPropertyName.trim() : messName.trim()) : undefined,
+          pgPropertyName: role === "vendor" && isPgVendor ? pgPropertyName.trim() : undefined,
+          pgArea: role === "vendor" && isPgVendor ? pgArea.trim() : undefined,
+          pgGender: role === "vendor" && isPgVendor ? pgGender : undefined,
+          messName: role === "vendor" && isFoodVendor ? messName.trim() : undefined,
+          messArea: role === "vendor" && isFoodVendor ? messArea.trim() : undefined,
+          messCuisine: role === "vendor" && isFoodVendor ? messCuisine.trim() : undefined,
         })
         setAuthResult(res)
         if (!res.success && !res.needsConfig) {
@@ -157,7 +185,16 @@ export function AccountCard({
     }
   }
 
-  const isPgOwner = role === "pg_owner"
+  const isVendor = role === "vendor"
+  const isPgVendor = isVendor && vendorType === "pg_vendor"
+  const isFoodVendor = isVendor && vendorType === "food_mess_vendor"
+
+  const getRoleLabel = () => {
+    if (role === "vendor") {
+      return vendorType === "food_mess_vendor" ? "Food/Mess Vendor" : "PG Vendor"
+    }
+    return "Student"
+  }
 
   return (
     <div className="w-full">
@@ -172,8 +209,8 @@ export function AccountCard({
         </h2>
         <p className="text-xs sm:text-sm text-slate-500 mt-1">
           {authMode === "signin"
-            ? "Access student housing, food passes, and owner dashboard."
-            : "Select whether you are a Student or a PG Property Owner."}
+            ? "Access student housing, food passes, and vendor dashboard."
+            : "Select whether you are a Student or a Vendor."}
         </p>
       </div>
 
@@ -203,7 +240,7 @@ export function AccountCard({
         </button>
       </div>
 
-      {/* ACCOUNT ROLE SELECTOR (STUDENT vs PG OWNER) */}
+      {/* ACCOUNT ROLE SELECTOR (STUDENT vs VENDOR) */}
       <div className="mb-5">
         <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">
           Select Account Option
@@ -235,9 +272,9 @@ export function AccountCard({
 
           <button
             type="button"
-            onClick={() => handleRoleChange("pg_owner")}
+            onClick={() => handleRoleChange("vendor")}
             className={`p-3 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
-              role === "pg_owner"
+              role === "vendor"
                 ? "border-[#1f6fe5] bg-blue-50/70 text-[#10233f] shadow-xs ring-1 ring-[#1f6fe5]"
                 : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
             }`}
@@ -245,19 +282,77 @@ export function AccountCard({
             <div className="flex items-center gap-2 mb-1">
               <div
                 className={`p-1.5 rounded-lg ${
-                  role === "pg_owner" ? "bg-[#1f6fe5] text-white" : "bg-slate-100 text-slate-500"
+                  role === "vendor" ? "bg-[#1f6fe5] text-white" : "bg-slate-100 text-slate-500"
                 }`}
               >
-                <Building2 className="w-4 h-4" />
+                <Store className="w-4 h-4" />
               </div>
-              <span className="text-xs font-bold">PG Owner</span>
+              <span className="text-xs font-bold">Vendor</span>
             </div>
             <p className="text-[11px] text-slate-500 leading-tight">
-              List &amp; manage accommodations
+              List PG or mess services
             </p>
           </button>
         </div>
       </div>
+
+      {/* VENDOR TYPE SELECTOR (PG Vendor vs Food/Mess Vendor) */}
+      {isVendor && authMode === "signup" && !authResult?.success && (
+        <div className="mb-5">
+          <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">
+            Vendor Type
+          </label>
+          <div className="grid grid-cols-2 gap-2.5">
+            <button
+              type="button"
+              onClick={() => setVendorType("pg_vendor")}
+              className={`p-3 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                vendorType === "pg_vendor"
+                  ? "border-emerald-500 bg-emerald-50/70 text-[#10233f] shadow-xs ring-1 ring-emerald-500"
+                  : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+              }`}
+            >
+              <div className="flex items-center gap-2 mb-1">
+                <div
+                  className={`p-1.5 rounded-lg ${
+                    vendorType === "pg_vendor" ? "bg-emerald-500 text-white" : "bg-slate-100 text-slate-500"
+                  }`}
+                >
+                  <Building2 className="w-4 h-4" />
+                </div>
+                <span className="text-xs font-bold">PG Vendor</span>
+              </div>
+              <p className="text-[11px] text-slate-500 leading-tight">
+                Student PG, hostel or flat
+              </p>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setVendorType("food_mess_vendor")}
+              className={`p-3 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                vendorType === "food_mess_vendor"
+                  ? "border-orange-500 bg-orange-50/70 text-[#10233f] shadow-xs ring-1 ring-orange-500"
+                  : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+              }`}
+            >
+              <div className="flex items-center gap-2 mb-1">
+                <div
+                  className={`p-1.5 rounded-lg ${
+                    vendorType === "food_mess_vendor" ? "bg-orange-500 text-white" : "bg-slate-100 text-slate-500"
+                  }`}
+                >
+                  <Utensils className="w-4 h-4" />
+                </div>
+                <span className="text-xs font-bold">Food / Mess</span>
+              </div>
+              <p className="text-[11px] text-slate-500 leading-tight">
+                Mess, tiffin or food service
+              </p>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* EMAIL CONFIRMATION NOTICE IN REGISTER NOW AREA */}
       {authMode === "signup" && !authResult?.success && (
@@ -281,12 +376,12 @@ export function AccountCard({
         </div>
       )}
 
-      {/* PG OWNER NOTICE */}
-      {isPgOwner && authMode === "signup" && !authResult?.success && (
+      {/* VENDOR NOTICE */}
+      {isVendor && authMode === "signup" && !authResult?.success && (
         <div className="mb-4 p-3 rounded-2xl bg-amber-50 border border-amber-200/80 text-amber-900 text-xs flex items-start gap-2.5">
           <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
           <div className="leading-relaxed">
-            <span className="font-bold">Admin Verification Notice:</span> After registering, a Locano admin will manually contact you. Submitted property listings remain pending until admin review and approval.
+            <span className="font-bold">Admin Verification Notice:</span> After registering, a Locano admin will review your vendor application. You cannot publish listings until your application is approved.
           </div>
         </div>
       )}
@@ -316,7 +411,7 @@ export function AccountCard({
               </p>
               <ol className="list-decimal list-inside space-y-1.5 text-slate-600 text-[11px] leading-relaxed">
                 <li>Open your email inbox (and check <span className="font-medium text-slate-800">Spam or Promotions</span> if you don&apos;t see it within 2 minutes).</li>
-                <li>Click the <span className="font-semibold text-[#1f6fe5]">“Confirm your email”</span> verification link.</li>
+                <li>Click the <span className="font-semibold text-[#1f6fe5]">&ldquo;Confirm your email&rdquo;</span> verification link.</li>
                 <li>Once confirmed, return here and sign in with your email and password.</li>
               </ol>
             </div>
@@ -352,9 +447,9 @@ export function AccountCard({
               </button>
             </div>
 
-            {isPgOwner && (
+            {isVendor && (
               <p className="text-[11px] text-amber-700 bg-amber-50 p-2.5 rounded-xl border border-amber-200 text-left">
-                <span className="font-bold">Note for PG Owners:</span> A Locano admin will also contact you manually for property verification and onboarding.
+                <span className="font-bold">Note for Vendors:</span> A Locano admin will review your application after email confirmation. You will be notified once approved.
               </p>
             )}
           </div>
@@ -370,25 +465,14 @@ export function AccountCard({
               </div>
             </div>
 
-            {isPgOwner ? (
-              <Link
-                href="/pg-owner/submit"
-                onClick={onDone}
-                className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-[#10233f] text-white text-xs font-bold hover:bg-[#1f6fe5] transition-colors"
-              >
-                <span>Go to PG Listing Submission</span>
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-            ) : (
-              <button
-                type="button"
-                onClick={onDone}
-                className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-[#10233f] text-white text-xs font-bold hover:bg-[#1f6fe5] transition-colors cursor-pointer"
-              >
-                <span>Continue to LOCANO</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={onDone}
+              className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-[#10233f] text-white text-xs font-bold hover:bg-[#1f6fe5] transition-colors cursor-pointer"
+            >
+              <span>Continue to LOCANO</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
           </div>
         )
       )}
@@ -439,7 +523,7 @@ export function AccountCard({
                 <input
                   type="text"
                   required
-                  placeholder={isPgOwner ? "e.g. Ramesh Bhat" : "e.g. Rohan Kamath"}
+                  placeholder={isVendor ? "e.g. Ramesh Bhat" : "e.g. Rohan Kamath"}
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   className="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-slate-200 text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#1f6fe5]"
@@ -458,7 +542,7 @@ export function AccountCard({
               <input
                 type="email"
                 required
-                placeholder={isPgOwner ? "owner@property.com" : "student@college.edu"}
+                placeholder={isVendor ? "vendor@business.com" : "student@college.edu"}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-slate-200 text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#1f6fe5]"
@@ -504,20 +588,111 @@ export function AccountCard({
             </div>
           )}
 
-          {/* Optional PG/Property Name for PG Owners on Sign Up */}
-          {authMode === "signup" && isPgOwner && (
+          {/* Vendor Business Name (Sign Up, Vendor only) */}
+          {authMode === "signup" && isVendor && (
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Property or PG Name <span className="text-slate-400 font-normal">(Optional)</span>
+                Business / Owner Name *
               </label>
               <input
                 type="text"
-                placeholder="e.g. Greenfield Boys PG"
-                value={propertyName}
-                onChange={(e) => setPropertyName(e.target.value)}
+                required
+                placeholder={isPgVendor ? "e.g. Greenfield PG Properties" : "e.g. Amma's Kitchen Mess"}
+                value={businessName}
+                onChange={(e) => setBusinessName(e.target.value)}
                 className="w-full px-4 py-2.5 rounded-2xl border border-slate-200 text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#1f6fe5]"
               />
             </div>
+          )}
+
+          {/* PG Vendor specific fields */}
+          {authMode === "signup" && isPgVendor && (
+            <>
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Property / PG Name <span className="text-slate-400 font-normal">(Optional)</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Greenfield Boys PG"
+                  value={pgPropertyName}
+                  onChange={(e) => setPgPropertyName(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-2xl border border-slate-200 text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#1f6fe5]"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-2.5">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    Area <span className="text-slate-400 font-normal">(Optional)</span>
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Kadri"
+                    value={pgArea}
+                    onChange={(e) => setPgArea(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-2xl border border-slate-200 text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#1f6fe5]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    PG Type <span className="text-slate-400 font-normal">(Optional)</span>
+                  </label>
+                  <select
+                    value={pgGender}
+                    onChange={(e) => setPgGender(e.target.value)}
+                    className="w-full px-3 py-2.5 rounded-2xl border border-slate-200 text-xs sm:text-sm text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-[#1f6fe5]"
+                  >
+                    <option value="Boys">Boys PG</option>
+                    <option value="Girls">Girls PG</option>
+                    <option value="Co-ed">Co-ed PG</option>
+                  </select>
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Food/Mess Vendor specific fields */}
+          {authMode === "signup" && isFoodVendor && (
+            <>
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Mess / Kitchen Name <span className="text-slate-400 font-normal">(Optional)</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Amma's Mess & Tiffin"
+                  value={messName}
+                  onChange={(e) => setMessName(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-2xl border border-slate-200 text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#1f6fe5]"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-2.5">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    Area <span className="text-slate-400 font-normal">(Optional)</span>
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Balmatta"
+                    value={messArea}
+                    onChange={(e) => setMessArea(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-2xl border border-slate-200 text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#1f6fe5]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    Cuisine <span className="text-slate-400 font-normal">(Optional)</span>
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. South Indian"
+                    value={messCuisine}
+                    onChange={(e) => setMessCuisine(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-2xl border border-slate-200 text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#1f6fe5]"
+                  />
+                </div>
+              </div>
+            </>
           )}
 
           {/* Password */}
@@ -559,8 +734,8 @@ export function AccountCard({
             ) : (
               <span>
                 {authMode === "signin"
-                  ? `Sign In as ${isPgOwner ? "PG Owner" : "Student"}`
-                  : `Register as ${isPgOwner ? "PG Owner" : "Student"}`}
+                  ? `Sign In as ${getRoleLabel()}`
+                  : `Register as ${getRoleLabel()}`}
               </span>
             )}
           </button>
@@ -581,17 +756,7 @@ export function AccountCard({
         </button>
       </div>
 
-      {/* PG OWNER SUBMIT LINK BANNER */}
-      <div className="mt-4 pt-3 border-t border-slate-100 text-center">
-        <Link
-          href="/pg-owner/submit"
-          onClick={onDone}
-          className="text-xs font-medium text-slate-500 hover:text-[#1f6fe5] transition-colors inline-flex items-center gap-1"
-        >
-          <span>PG Owner? Submit your accommodation listing</span>
-          <ArrowRight className="w-3 h-3" />
-        </Link>
-      </div>
+      {/* VENDOR SUBMIT LINK BANNER — removed, registration now happens only through signup */}
     </div>
   )
 }

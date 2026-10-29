@@ -4,6 +4,7 @@ import Image from "next/image"
 import { notFound } from "next/navigation"
 import { fetchMessById } from "@/lib/services/mess"
 import { EnquiryPreviewButton } from "@/components/EnquiryPreviewButton"
+import { ListingCardImage } from "@/components/ListingCardImage"
 import {
   ArrowLeft,
   MapPin,
@@ -110,26 +111,40 @@ export default async function MessDetailPage({ params }: MessPageProps) {
             </div>
           </div>
 
-          {/* VISUAL ASSET / SAMPLE BANNER */}
-          <div className="mt-6 relative h-56 sm:h-72 w-full rounded-2xl overflow-hidden bg-slate-100 border border-slate-200">
-            <Image
-              src={listing.sampleImage}
-              alt={listing.name}
-              fill
-              className="object-cover"
-              priority
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent flex items-end p-4 sm:p-6">
-              <div className="text-white">
-                <div className="text-xs font-semibold uppercase tracking-wider text-orange-300">
-                  Fictional Sample Image
-                </div>
-                <div className="text-sm sm:text-base font-medium text-slate-100">
-                  Representative Mangaluru student dining &amp; tiffin visual
+          {/* VISUAL ASSET / LISTING PHOTO BANNER */}
+          {(() => {
+            const rawImage =
+              (Array.isArray(listing.images) && listing.images.length > 0 ? listing.images[0] : null) ||
+              listing.sampleImage ||
+              "/mess-tiffin.jpg"
+            const isUploaded = Boolean(
+              rawImage &&
+              (rawImage.startsWith("http") || (!rawImage.includes("mess-tiffin") && !rawImage.includes("mess-thali")))
+            )
+
+            return (
+              <div className="mt-6 relative h-56 sm:h-72 w-full rounded-2xl overflow-hidden bg-slate-100 border border-slate-200">
+                <ListingCardImage
+                  src={rawImage}
+                  fallbackSrc="/mess-tiffin.jpg"
+                  alt={listing.name}
+                  fill
+                  className="object-cover"
+                  priority
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent flex items-end p-4 sm:p-6">
+                  <div className="text-white">
+                    <div className="text-xs font-semibold uppercase tracking-wider text-orange-300">
+                      {isUploaded ? "Verified Dining Photo" : "Fictional Sample Image"}
+                    </div>
+                    <div className="text-sm sm:text-base font-medium text-slate-100">
+                      {isUploaded ? listing.name : "Representative Mangaluru student dining & tiffin visual"}
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
+            )
+          })()}
         </div>
 
         {/* DETAILS GRID */}
