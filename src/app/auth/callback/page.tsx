@@ -11,14 +11,26 @@ function CallbackContent() {
   useEffect(() => {
     const handleAuth = async () => {
       const code = searchParams.get("code")
+      const next = searchParams.get("next")
+      const type = searchParams.get("type")
       const supabase = getSupabaseBrowserClient()
 
       if (code && supabase) {
         try {
           await supabase.auth.exchangeCodeForSession(code)
         } catch {
-          // If code exchange fails or was already exchanged, continue to confirmed page
+          // If code exchange fails or was already exchanged, continue
         }
+      }
+
+      if (next) {
+        router.replace(next)
+        return
+      }
+
+      if (type === "recovery") {
+        router.replace("/auth/reset-password")
+        return
       }
 
       // Preserve any query params and redirect to /auth/confirmed
@@ -35,7 +47,7 @@ function CallbackContent() {
       <div className="w-full max-w-md mx-auto bg-white rounded-3xl p-8 border border-slate-100 shadow-xl text-center">
         <div className="w-10 h-10 border-4 border-[#1f6fe5] border-t-transparent rounded-full animate-spin mx-auto" />
         <p className="text-xs font-semibold text-slate-500 mt-3">
-          Verifying account confirmation...
+          Verifying authentication...
         </p>
       </div>
     </div>

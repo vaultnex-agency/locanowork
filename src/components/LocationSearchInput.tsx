@@ -3,20 +3,28 @@
 import React, { useState, useRef, useEffect } from "react"
 import { MapPin, Navigation, X, Loader2, Check } from "lucide-react"
 
-const POPULAR_MANGALURU_AREAS = [
+export const POPULAR_MANGALURU_AREAS = [
   "Balmatta",
   "Deralakatte",
   "Kadri",
   "Kankanady",
   "Hampankatta",
   "Bejai",
+  "Falnir",
   "Surathkal",
   "Attavar",
+  "Pumpwell",
+  "Bendoor",
+  "Kuntikana",
+  "Kodialbail",
+  "Padil",
+  "Ullal",
+  "Bondel",
   "Jeppu",
   "Pandeshwar",
 ]
 
-const MANGALURU_COORDS: Record<string, { lat: number; lng: number }> = {
+export const MANGALURU_COORDS: Record<string, { lat: number; lng: number }> = {
   Balmatta: { lat: 12.8708, lng: 74.8458 },
   Deralakatte: { lat: 12.8166, lng: 74.8988 },
   Kankanady: { lat: 12.8633, lng: 74.8585 },
@@ -25,11 +33,20 @@ const MANGALURU_COORDS: Record<string, { lat: number; lng: number }> = {
   Surathkal: { lat: 13.0119, lng: 74.7943 },
   Bejai: { lat: 12.8872, lng: 74.8422 },
   Attavar: { lat: 12.8617, lng: 74.8475 },
+  Falnir: { lat: 12.864, lng: 74.846 },
+  Pumpwell: { lat: 12.859, lng: 74.8635 },
+  Bendoor: { lat: 12.8708, lng: 74.852 },
+  Kuntikana: { lat: 12.8985, lng: 74.857 },
+  Kodialbail: { lat: 12.8735, lng: 74.8415 },
+  Padil: { lat: 12.867, lng: 74.885 },
+  Ullal: { lat: 12.825, lng: 74.854 },
+  Bondel: { lat: 12.915, lng: 74.865 },
+  Panambur: { lat: 12.952, lng: 74.808 },
   Jeppu: { lat: 12.8519, lng: 74.8465 },
   Pandeshwar: { lat: 12.8586, lng: 74.8392 },
 }
 
-function getClosestMangaluruArea(lat: number, lng: number): string {
+export function getClosestMangaluruArea(lat: number, lng: number): string {
   let closest = "Balmatta"
   let minDistance = Infinity
 
@@ -108,7 +125,6 @@ export function LocationSearchInput({
       },
       (err) => {
         setIsLocating(false)
-        // Fallback gracefully to default area or message
         console.warn("Geolocation notice:", err.message)
         onChange("Balmatta")
         setIsOpen(false)
@@ -241,4 +257,3 @@ export function LocationSearchInput({
     </div>
   )
 }
-

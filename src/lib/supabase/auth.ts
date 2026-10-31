@@ -308,3 +308,69 @@ export async function getCurrentUserProfile() {
 
   return profile || null
 }
+
+
+export async function sendPasswordResetEmail(email: string): Promise<{ success: boolean; message: string; needsConfig?: boolean }> {
+  if (!isSupabaseConfigured()) {
+    return {
+      success: false,
+      needsConfig: true,
+      message:
+        "Supabase credentials are not configured. To enable password resets, configure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.",
+    }
+  }
+
+  const supabase = getSupabaseBrowserClient()
+  if (!supabase) {
+    return { success: false, message: "Database client is currently unavailable." }
+  }
+
+  try {
+    const cleanEmail = email.trim().toLowerCase()
+    const redirectUrl =
+      typeof window !== "undefined"
+        ? `${window.location.origin}/auth/reset-password`
+        : undefined
+
+    const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
+      redirectTo: redirectUrl,
+    })
+
+    if (error) {
+      return { success: false, message: error.message }
+    }
+
+    return {
+      success: true,
+      message: `A password reset link has been dispatched to ${cleanEmail}. Please check your inbox and Spam folder.`,
+    }
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : "Failed to dispatch password reset email"
+    return { success: false, message: msg }
+  }
+}
+
+export async function updateUserPassword(newPassword: string): Promise<{ success: boolean; message: string }> {
+  const supabase = getSupabaseBrowserClient()
+  if (!supabase) {
+    return { success: false, message: "Database client is currently unavailable." }
+  }
+
+  try {
+    const { error } = await supabase.auth.updateUser({
+      password: newPassword,
+    })
+
+    if (error) {
+      return { success: false, message: error.message }
+    }
+
+    return {
+      success: true,
+      message: "Your password has been successfully updated!",
+    }
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : "Failed to update password"
+    return { success: false, message: msg }
+  }
+}

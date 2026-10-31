@@ -20,6 +20,7 @@ import {
   Home,
   Utensils,
   Bus,
+  Siren,
 } from "lucide-react"
 
 interface AuthProfile {
@@ -39,15 +40,13 @@ export function Navbar() {
   const [authUser, setAuthUser] = useState<AuthProfile | null>(null)
   const accountDropdownRef = useRef<HTMLDivElement>(null)
 
-  const [activeSection, setActiveSection] = useState<"hero" | "about" | null>(
-    pathname === "/" ? "hero" : null
-  )
+  const [activeSection, setActiveSection] = useState<"about" | null>(null)
 
   // Scroll listener
   useEffect(() => {
     let ticking = false
     let lastScrolled = false
-    let lastActive: "hero" | "about" | null = pathname === "/" ? "hero" : null
+    let lastActive: "about" | null = null
 
     const handleScroll = () => {
       if (!ticking) {
@@ -59,14 +58,9 @@ export function Navbar() {
           }
 
           if (pathname === "/") {
-            const sectionIds = ["hero", "about"] as const
-            let active: "hero" | "about" = "hero"
-            for (const id of sectionIds) {
-              const el = document.getElementById(id)
-              if (el && el.getBoundingClientRect().top <= 150) {
-                active = id
-              }
-            }
+            const el = document.getElementById("about")
+            const isAbout = el ? el.getBoundingClientRect().top <= 150 : false
+            const active = isAbout ? "about" : null
             if (active !== lastActive) {
               lastActive = active
               setActiveSection(active)
@@ -170,11 +164,14 @@ export function Navbar() {
     setAuthUser(null)
   }
 
-  const isHomeActive = pathname === "/" && activeSection === "hero"
+  const isAccommodationActive = pathname.startsWith("/accommodation")
+  const isMessActive = pathname.startsWith("/mess")
   const isRoutesActive = pathname.startsWith("/transport")
+  const isEssentialActive = pathname.startsWith("/emergency")
   const isAboutActive =
     pathname === "/about" ||
     (pathname === "/" && activeSection === "about")
+
   const activeCls = "text-[#1f6fe5] bg-[#e0efff] font-semibold"
   const inactiveCls = "text-slate-700 hover:text-[#1f6fe5] hover:bg-slate-100/60 font-medium"
 
@@ -209,19 +206,39 @@ export function Navbar() {
 
         {/* DESKTOP NAVIGATION LINKS */}
         <div className="hidden items-center gap-0.5 text-xs font-medium text-slate-700 sm:flex sm:gap-1 sm:text-sm">
-          <Link href={pathname === "/" ? "#hero" : "/"} onClick={closeMenu} className={`px-2.5 py-1.5 rounded-full transition-colors sm:px-3 ${isHomeActive ? activeCls : inactiveCls}`}>
-            Home
-          </Link>
-          <Link href="/accommodation" onClick={closeMenu} className={`px-2.5 py-1.5 rounded-full transition-colors sm:px-3 ${pathname.startsWith("/accommodation") ? activeCls : inactiveCls}`}>
+          <Link
+            href="/accommodation"
+            onClick={closeMenu}
+            className={`px-2.5 py-1.5 rounded-full transition-colors sm:px-3 ${isAccommodationActive ? activeCls : inactiveCls}`}
+          >
             Accommodation
           </Link>
-          <Link href="/mess" onClick={closeMenu} className={`px-2.5 py-1.5 rounded-full transition-colors sm:px-3 ${pathname.startsWith("/mess") ? activeCls : inactiveCls}`}>
+          <Link
+            href="/mess"
+            onClick={closeMenu}
+            className={`px-2.5 py-1.5 rounded-full transition-colors sm:px-3 ${isMessActive ? activeCls : inactiveCls}`}
+          >
             Food &amp; Mess
           </Link>
-          <Link href="/transport" onClick={closeMenu} className={`px-2.5 py-1.5 rounded-full transition-colors sm:px-3 ${isRoutesActive ? activeCls : inactiveCls}`}>
+          <Link
+            href="/transport"
+            onClick={closeMenu}
+            className={`px-2.5 py-1.5 rounded-full transition-colors sm:px-3 ${isRoutesActive ? activeCls : inactiveCls}`}
+          >
             Transport
           </Link>
-          <Link href={pathname === "/" ? "#about" : "/about"} onClick={closeMenu} className={`px-2.5 py-1.5 rounded-full transition-colors sm:px-3 ${isAboutActive ? activeCls : inactiveCls}`}>
+          <Link
+            href="/emergency"
+            onClick={closeMenu}
+            className={`px-2.5 py-1.5 rounded-full transition-colors sm:px-3 ${isEssentialActive ? activeCls : inactiveCls}`}
+          >
+            Essential Services
+          </Link>
+          <Link
+            href={pathname === "/" ? "#about" : "/about"}
+            onClick={closeMenu}
+            className={`px-2.5 py-1.5 rounded-full transition-colors sm:px-3 ${isAboutActive ? activeCls : inactiveCls}`}
+          >
             About
           </Link>
         </div>
@@ -349,6 +366,14 @@ export function Navbar() {
                         <Bus className="size-3.5 text-emerald-500" />
                         <span>Transit Routes &amp; Buses</span>
                       </Link>
+                      <Link
+                        href="/emergency"
+                        onClick={() => setIsAccountDropdownOpen(false)}
+                        className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-slate-50 transition-colors text-slate-700 font-medium"
+                      >
+                        <Siren className="size-3.5 text-rose-500" />
+                        <span>Essential Services</span>
+                      </Link>
                     </>
                   )}
                 </div>
@@ -398,13 +423,47 @@ export function Navbar() {
             id="mobile-navigation"
             className="absolute left-0 right-0 top-[calc(100%+0.5rem)] flex flex-col gap-1 rounded-2xl border border-slate-200/70 bg-white/95 p-2 shadow-lg backdrop-blur-md sm:hidden"
           >
-            <Link href={pathname === "/" ? "#hero" : "/"} onClick={closeMenu} className={`rounded-xl px-4 py-2.5 text-sm ${isHomeActive ? activeCls : inactiveCls}`}>Home</Link>
-            <Link href="/accommodation" onClick={closeMenu} className={`rounded-xl px-4 py-2.5 text-sm ${pathname.startsWith("/accommodation") ? activeCls : inactiveCls}`}>Accommodation</Link>
-            <Link href="/mess" onClick={closeMenu} className={`rounded-xl px-4 py-2.5 text-sm ${pathname.startsWith("/mess") ? activeCls : inactiveCls}`}>Food &amp; Mess</Link>
-            <Link href="/transport" onClick={closeMenu} className={`rounded-xl px-4 py-2.5 text-sm ${isRoutesActive ? activeCls : inactiveCls}`}>Transport</Link>
-            <Link href={pathname === "/" ? "#about" : "/about"} onClick={closeMenu} className={`rounded-xl px-4 py-2.5 text-sm ${isAboutActive ? activeCls : inactiveCls}`}>About</Link>
+            <Link
+              href="/accommodation"
+              onClick={closeMenu}
+              className={`rounded-xl px-4 py-2.5 text-sm ${isAccommodationActive ? activeCls : inactiveCls}`}
+            >
+              Accommodation
+            </Link>
+            <Link
+              href="/mess"
+              onClick={closeMenu}
+              className={`rounded-xl px-4 py-2.5 text-sm ${isMessActive ? activeCls : inactiveCls}`}
+            >
+              Food &amp; Mess
+            </Link>
+            <Link
+              href="/transport"
+              onClick={closeMenu}
+              className={`rounded-xl px-4 py-2.5 text-sm ${isRoutesActive ? activeCls : inactiveCls}`}
+            >
+              Transport
+            </Link>
+            <Link
+              href="/emergency"
+              onClick={closeMenu}
+              className={`rounded-xl px-4 py-2.5 text-sm ${isEssentialActive ? activeCls : inactiveCls}`}
+            >
+              Essential Services
+            </Link>
+            <Link
+              href={pathname === "/" ? "#about" : "/about"}
+              onClick={closeMenu}
+              className={`rounded-xl px-4 py-2.5 text-sm ${isAboutActive ? activeCls : inactiveCls}`}
+            >
+              About
+            </Link>
             {authUser?.role === "pg_owner" && (
-              <Link href="/pg-owner/submit" onClick={closeMenu} className="rounded-xl px-4 py-2.5 text-sm text-[#1f6fe5] font-semibold bg-blue-50/70">
+              <Link
+                href="/pg-owner/submit"
+                onClick={closeMenu}
+                className="rounded-xl px-4 py-2.5 text-sm text-[#1f6fe5] font-semibold bg-blue-50/70"
+              >
                 + Submit PG Listing
               </Link>
             )}
