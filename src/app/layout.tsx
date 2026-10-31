@@ -21,7 +21,7 @@ const fraunces = Fraunces({
 
 export const metadata: Metadata = {
   title: {
-    default: "LOCANO — Mangaluru transport",
+    default: "LOCANO - settling made simple",
     template: "%s · LOCANO",
   },
   description:
